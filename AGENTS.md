@@ -1,0 +1,95 @@
+# AGENTS.md — AP Invoice Engine Specification & Execution Rules
+
+You are building a production-quality invoice platform with me. Work in PHASES.
+At the end of each phase, RUN the verification commands yourself, show me the output, and STOP. Do not begin the next phase until I say "continue".
+
+---
+
+## WHAT WE ARE BUILDING AND WHY
+
+### The business problem
+Accounts payable staff manually retype line-item data from supplier invoices — digital PDFs, scans, and phone photographs — into accounting software. It is high-volume, low-judgement work. Errors surface late as duplicate payments, payment disputes, and month-end reconciliation gaps. Generic OCR fails because vendor layouts vary without limit. Template extraction fails because every new vendor needs configuration.
+
+Separately, small businesses and freelancers create outgoing invoices manually in word processors or spreadsheets, producing inconsistent documents with arithmetic errors and non-sequential numbering.
+
+### The solution
+One platform that does both:
+
+**INBOUND (accounts payable)**
+1. Accept a photograph taken on a phone, or a browsed PDF/PNG/JPG/TIFF
+2. Extract structured invoice data — header fields AND line items — against a strict Pydantic schema using a vision LLM with a bounded repair loop
+3. Validate arithmetic DETERMINISTICALLY in plain Python
+4. Show an instant summary the moment processing finishes
+5. Route anything uncertain or arithmetically inconsistent to a human review queue showing the source image beside an editable form
+6. Remember everything — full searchable history, server-side
+
+**OUTBOUND (accounts receivable)**
+7. Create and issue invoices from a form with dynamic line items, live calculated totals, gapless numbering, and PDF download
+8. Let the user describe an invoice in natural language and have the form pre-filled — but ALWAYS recompute totals in Python and ALWAYS require human confirmation before issuing
+
+**INSIGHT AND ASSISTANCE**
+9. A dashboard surfacing real business patterns: spend by vendor and currency, month-over-month trend, vendor concentration, unit price drift, duplicate risk, payment aging, validation error rate by vendor, tax anomalies
+10. A grounded AI agent answering questions about the data via TEXT-TO-SQL, showing the generated query with every answer
+11. An append-only audit log of every AI decision and every human correction
+
+---
+
+## NON-NEGOTIABLE RULES
+
+Breaking any of these means the work is wrong, even if it runs.
+
+1. **Money is `Decimal` in Python and `Numeric(14,2)` in Postgres. NEVER `float`.** Float arithmetic causes sub-cent drift that makes the validation engine flag correct invoices. Quantities are `Numeric(14,4)`.
+2. **`app/services/validate.py` must NOT import anything from the AI layer.** All arithmetic, date, and currency checks are deterministic Python.
+3. **The extraction prompt must FORBID the model from correcting arithmetic.** It reports the printed subtotal exactly as shown, even when wrong. A model that "helpfully" fixes a mismatch hides the supplier error we exist to catch.
+4. **Invoice generation totals are computed in Python, never by the LLM.** If the model proposes a total, discard it and recompute. The AI fills fields; Python does arithmetic; a human confirms before issuing.
+5. **Invoice numbers must be gapless and unique per tenant.** Use a counter row with `SELECT ... FOR UPDATE`. Never `COUNT(*) + 1`.
+6. **The AI agent generates SQL that is validated before execution** by a guard using `sqlglot`: exactly one statement, SELECT only, table allowlist, `tenant_id` filter injected if absent, LIMIT capped. It executes as a READ-ONLY Postgres role with a 5-second `statement_timeout`.
+7. **Database Tenant Safety Net (Postgres RLS):** In addition to `sqlglot`, Postgres Row-Level Security (RLS) MUST be enabled on all tenant tables. The `invoice_ro` role MUST set `SET LOCAL app.current_tenant = 'tenant-uuid'` on every query connection so cross-tenant leakage is impossible at the database kernel level.
+8. **The agent makes TWO model calls** — one to generate SQL, one to explain the rows actually returned. Never one call that generates SQL and predicts the answer; that lets it state a number it never computed.
+9. **Never auto-execute an irreversible action.** No payments, no sending, no writes to external systems without explicit human action.
+10. **Bounded repair loop**: maximum 2 repair attempts, then route to human review. Never unbounded.
+11. **Page Processing Limit (Budget Guard):** If a PDF exceeds 5 pages, preprocess and extract ONLY the first 3 pages and the last 2 pages (where totals and line items reside) to prevent token budget blowouts on long T&C attachments.
+12. **Logical Duplicate Check:** SHA256 catches duplicate files. Post-extraction, you MUST check for logical duplicates via `(vendor_name, invoice_number)`. Flag logical duplicates as `DUPLICATE_WARNING` and route to review.
+13. **Every test must pass with NO API key set.** Use recorded fixtures. A test that needs a live key is not a test, it is a bill.
+14. **Secrets live only in `.env`, which is gitignored.** Never in code, never in a committed file, never in chat output.
+15. **Separate tables for inbound and outbound.** Received invoices go in `invoices`; issued invoices go in `issued_invoices`. Never mix them.
+
+---
+
+## TECH STACK — decided, do not substitute
+
+- Python 3.12, `uv` for dependencies
+- FastAPI (async) + Pydantic v2
+- PostgreSQL 16 + SQLAlchemy 2.0 async + Alembic
+- Redis + ARQ for background jobs
+- Anthropic Claude — vision extraction, agent SQL, draft invoice parsing
+- pypdf, pdfplumber, pdf2image, Pillow, opencv-python-headless
+- reportlab for PDF generation
+- sqlglot for SQL validation
+- Streamlit + Plotly for the UI
+- structlog for logging, pytest for tests
+- Docker Compose for local infrastructure
+
+Do NOT introduce LangChain, LangGraph, or any agent framework. The pipeline is linear: preprocess → extract → validate → route.
+
+---
+
+## PHASE 1 — Scaffold and infrastructure
+
+Create:
+- Full directory tree: `app/{core,api,services,services/agent,schemas,models,workers}`, `ailayer/{providers}`, `ui/{pages,lib,.streamlit}`, `prompts/`, `migrations/`, `data/{uploads,eval,seed}`, `scripts/`, `tests/{unit,integration}`, `docs/`
+- `pyproject.toml` with the stack above
+- `docker-compose.yml` — postgres:16-alpine and redis:7-alpine with healthchecks
+- `.env.example` with every variable documented and no values
+- `.gitignore` including `.env` and `data/uploads/*`
+- `Makefile`: setup, up, down, migrate, seed, run, worker, ui, test, eval, lint
+- `.vscode/settings.json`, `launch.json` (with a compound "Run everything" launching API + worker + UI), `tasks.json`
+- `app/core/config.py` (Pydantic Settings), `db.py` (async engine with `pool_pre_ping=True`), `logging.py` (structlog)
+- `app/main.py` with `GET /health` checking the database
+
+**VERIFY (run these and show me the output):**
+```bash
+docker compose up -d && sleep 5 && docker compose ps
+uv sync
+uv run uvicorn app.main:app --port 8000 &
+sleep 3 && curl -s localhost:8000/health

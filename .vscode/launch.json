@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API (FastAPI)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--reload",
+        "--port",
+        "8000"
+      ],
+      "jinja": true,
+      "justMyCode": true,
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Worker (ARQ)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "arq",
+      "args": [
+        "app.workers.worker.WorkerSettings"
+      ],
+      "justMyCode": true,
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "UI (Streamlit)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "ui/app.py"
+      ],
+      "justMyCode": true,
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run everything",
+      "configurations": [
+        "API (FastAPI)",
+        "Worker (ARQ)",
+        "UI (Streamlit)"
+      ],
+      "stopAll": true
+    }
+  ]
+}
+
