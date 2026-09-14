@@ -1,6 +1,8 @@
+from unittest.mock import patch
+
 import pytest
 from httpx import ASGITransport, AsyncClient
-from unittest.mock import patch
+
 from app.main import app
 
 
@@ -43,4 +45,3 @@ async def test_health_endpoint_degraded():
             data = response.json()
             assert data["status"] == "degraded"
             assert data["database"] == "disconnected"
-

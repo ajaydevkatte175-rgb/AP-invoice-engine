@@ -93,3 +93,30 @@ docker compose up -d && sleep 5 && docker compose ps
 uv sync
 uv run uvicorn app.main:app --port 8000 &
 sleep 3 && curl -s localhost:8000/health
+
+## PHASE 2 — Complete data model & Database RLS
+
+SQLAlchemy models with `UUIDMixin`, `TimestampMixin`, `TenantMixin`:
+
+**Inbound:** `documents`, `invoices`, `line_items`, `validation_flags`, `review_items`
+**Outbound:** `tenant_profile`, `invoice_counters`, `customers`, `issued_invoices`, `issued_line_items`
+**System:** `llm_calls`, `audit_log`, `chat_sessions`, `chat_messages`
+
+* All money columns `Numeric(14,2)`. All quantity columns `Numeric(14,4)`.
+* Unique constraint on `(tenant_id, invoice_number)` for `issued_invoices`.
+* Add a `tax_breakdown` JSONB column to `invoices` to store multi-tax line breakdowns.
+* Enable Postgres Row-Level Security (RLS) policies in the Alembic migration on all tenant-facing tables: `CREATE POLICY tenant_isolation ON invoices USING (tenant_id = current_setting('app.current_tenant', true)::uuid);`.
+
+Alembic setup with `env.py` reading `DATABASE_URL` from settings. Generate the initial migration.
+
+**VERIFY:**
+
+```bash
+uv run alembic upgrade head
+docker compose exec -T postgres psql -U postgres -d invoicedb -c "\dt"
+docker compose exec -T postgres psql -U postgres -d invoicedb -c "\d invoices"
+uv run alembic downgrade base && uv run alembic upgrade head
+
+```
+
+Confirm 14 tables and that money columns show `numeric(14,2)`. STOP.

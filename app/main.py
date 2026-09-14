@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -61,4 +62,3 @@ async def root():
         "status": "running",
         "docs_url": "/docs",
     }
-
