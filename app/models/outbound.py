@@ -36,9 +36,7 @@ class TenantProfile(Base, UUIDMixin, TimestampMixin, TenantMixin):
     bank_details: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
 
-    __table_args__ = (
-        UniqueConstraint("tenant_id", name="uq_tenant_profile_tenant_id"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", name="uq_tenant_profile_tenant_id"),)
 
 
 class InvoiceCounter(Base, UUIDMixin, TimestampMixin, TenantMixin):
@@ -67,9 +65,7 @@ class Customer(Base, UUIDMixin, TimestampMixin, TenantMixin):
     default_currency: Mapped[str] = mapped_column(String(3), default="USD", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "name", name="uq_customers_tenant_name"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "name", name="uq_customers_tenant_name"),)
 
     # Relationships
     issued_invoices: Mapped[list["IssuedInvoice"]] = relationship(
@@ -113,7 +109,9 @@ class IssuedInvoice(Base, UUIDMixin, TimestampMixin, TenantMixin):
 
     __table_args__ = (
         # Mandatory unique constraint per tenant
-        UniqueConstraint("tenant_id", "invoice_number", name="uq_issued_invoices_tenant_invoice_num"),
+        UniqueConstraint(
+            "tenant_id", "invoice_number", name="uq_issued_invoices_tenant_invoice_num"
+        ),
     )
 
     # Relationships
@@ -153,4 +151,3 @@ class IssuedLineItem(Base, UUIDMixin, TimestampMixin, TenantMixin):
 
     # Relationships
     issued_invoice: Mapped["IssuedInvoice"] = relationship(back_populates="line_items")
-

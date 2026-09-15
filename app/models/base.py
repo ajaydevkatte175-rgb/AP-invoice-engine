@@ -5,8 +5,6 @@ from sqlalchemy import DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.db import Base
-
 
 class UUIDMixin:
     """Provides a UUID primary key for models."""
@@ -42,4 +40,3 @@ class TenantMixin:
         nullable=False,
         index=True,
     )
-

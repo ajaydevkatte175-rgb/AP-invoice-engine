@@ -84,7 +84,9 @@ class Invoice(Base, UUIDMixin, TimestampMixin, TenantMixin):
     raw_extraction: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     __table_args__ = (
-        Index("ix_invoices_tenant_vendor_invoice_num", "tenant_id", "vendor_name", "invoice_number"),
+        Index(
+            "ix_invoices_tenant_vendor_invoice_num", "tenant_id", "vendor_name", "invoice_number"
+        ),
     )
 
     # Relationships
@@ -181,4 +183,3 @@ class ReviewItem(Base, UUIDMixin, TimestampMixin, TenantMixin):
 
     # Relationships
     invoice: Mapped["Invoice"] = relationship(back_populates="review_items")
-

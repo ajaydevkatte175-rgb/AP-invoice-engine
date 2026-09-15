@@ -3,9 +3,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1 import api_v1_router
 from app.core.config import settings
 from app.core.db import check_db_health, engine, engine_ro
 from app.core.logging import get_logger, setup_logging
+from app.core.middleware import TenantMiddleware
 
 logger = get_logger(__name__)
 
@@ -27,6 +29,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Middleware
+app.add_middleware(TenantMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,6 +38,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Routers
+app.include_router(api_v1_router)
 
 
 @app.get("/health", tags=["Health"])

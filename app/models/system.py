@@ -102,4 +102,3 @@ class ChatMessage(Base, UUIDMixin, TimestampMixin, TenantMixin):
 
     # Relationships
     session: Mapped["ChatSession"] = relationship(back_populates="messages")
-

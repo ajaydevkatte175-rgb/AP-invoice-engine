@@ -120,3 +120,23 @@ uv run alembic downgrade base && uv run alembic upgrade head
 ```
 
 Confirm 14 tables and that money columns show `numeric(14,2)`. STOP.
+
+
+## PHASE 3 — Core API Endpoints, CRUD Operations, & Tenant Middleware
+
+### Objectives:
+1. **Tenant Middleware & Context (`app/core/middleware.py`)**:
+   - Implement FastAPI middleware or dependency injection to extract/set the current tenant (`app.current_tenant`) for PostgreSQL Row-Level Security on every request.
+
+2. **Core CRUD Services (`app/services/`)**:
+   - Implement asynchronous business logic services handling creation, reading, updating, and listing for Inbound (AP) and Outbound (AR) entities (Vendors, Invoices, Line Items, Customers).
+
+3. **FastAPI Routers (`app/api/v1/`)**:
+   - Create clean, modular APIRouters:
+     - `/vendors`: Vendor management endpoints.
+     - `/invoices`: Inbound invoice upload, status updates, and line item retrieval.
+     - `/customers` & `/issued-invoices`: Outbound AR endpoints.
+   - Ensure all endpoints enforce strict Pydantic validation schemas and proper status codes.
+
+### VERIFY:
+- Run unit tests and verify API routes load correctly in the Swagger UI (`http://127.0.0.1:8000/docs`).

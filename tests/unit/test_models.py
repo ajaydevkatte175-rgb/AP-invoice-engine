@@ -1,9 +1,7 @@
-from decimal import Decimal
 from sqlalchemy import Numeric
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models import (
-    AuditLog,
     Base,
     ChatMessage,
     ChatSession,
@@ -13,7 +11,6 @@ from app.models import (
     InvoiceCounter,
     IssuedInvoice,
     IssuedLineItem,
-    LLMCall,
     LineItem,
     ReviewItem,
     TenantProfile,
@@ -122,4 +119,3 @@ def test_mixins_present_on_models():
         assert hasattr(model, "tenant_id"), f"{model.__name__} missing tenant_id"
         assert hasattr(model, "id"), f"{model.__name__} missing id"
         assert hasattr(model, "created_at"), f"{model.__name__} missing created_at"
-

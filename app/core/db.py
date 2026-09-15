@@ -43,9 +43,15 @@ class Base(DeclarativeBase):
     pass
 
 
+from app.core.middleware import get_current_tenant_id
+
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
+            tenant_id = get_current_tenant_id()
+            if tenant_id:
+                await session.execute(text(f"SET LOCAL app.current_tenant = '{tenant_id}'"))
             yield session
         finally:
             await session.close()
@@ -54,6 +60,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def get_db_ro() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocalRO() as session:
         try:
+            tenant_id = get_current_tenant_id()
+            if tenant_id:
+                await session.execute(text(f"SET LOCAL app.current_tenant = '{tenant_id}'"))
             yield session
         finally:
             await session.close()
