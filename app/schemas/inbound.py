@@ -2,12 +2,13 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
-from pydantic import BaseModel, ConfigDict, Field
 
+from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
 # Document Schemas
 # ---------------------------------------------------------------------------
+
 
 class DocumentBase(BaseModel):
     filename: str = Field(..., max_length=255)
@@ -38,6 +39,7 @@ class DocumentResponse(DocumentBase):
 # ---------------------------------------------------------------------------
 # Line Item Schemas
 # ---------------------------------------------------------------------------
+
 
 class LineItemBase(BaseModel):
     line_number: int = Field(..., ge=1)
@@ -78,6 +80,7 @@ class LineItemResponse(LineItemBase):
 # Validation Flag Schemas
 # ---------------------------------------------------------------------------
 
+
 class ValidationFlagResponse(BaseModel):
     id: uuid.UUID
     invoice_id: uuid.UUID
@@ -100,6 +103,7 @@ class ValidationFlagResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Review Item Schemas
 # ---------------------------------------------------------------------------
+
 
 class ReviewItemResponse(BaseModel):
     id: uuid.UUID
@@ -129,6 +133,7 @@ class ReviewItemUpdate(BaseModel):
 # ---------------------------------------------------------------------------
 # Invoice Schemas
 # ---------------------------------------------------------------------------
+
 
 class InvoiceBase(BaseModel):
     invoice_number: str | None = Field(default=None, max_length=100)
@@ -201,4 +206,3 @@ class InvoiceDetailResponse(InvoiceResponse):
     review_items: list[ReviewItemResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
-

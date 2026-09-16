@@ -1,4 +1,5 @@
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -99,4 +100,3 @@ async def delete_customer_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Customer '{customer_id}' not found",
         )
-

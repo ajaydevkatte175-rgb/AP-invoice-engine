@@ -13,4 +13,3 @@ api_v1_router.include_router(customers_router)
 api_v1_router.include_router(issued_invoices_router)
 
 __all__ = ["api_v1_router"]
-

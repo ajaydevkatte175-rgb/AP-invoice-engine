@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -267,4 +268,3 @@ async def test_vendor_aggregation_and_tenant_isolation():
         vendors_b = [v["vendor_name"] for v in res_b.json()["items"]]
         assert "Cloud Hosting Direct" in vendors_b
         assert "Global Office Supplies" not in vendors_b
-

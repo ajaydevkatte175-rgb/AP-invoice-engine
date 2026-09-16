@@ -2,16 +2,17 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
 
+from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
 # Customer Schemas
 # ---------------------------------------------------------------------------
 
+
 class CustomerBase(BaseModel):
     name: str = Field(..., max_length=255)
-    email: EmailStr | None = None
+    email: str | None = Field(default=None, max_length=255)
     address: str | None = None
     tax_id: str | None = Field(default=None, max_length=100)
     phone: str | None = Field(default=None, max_length=50)
@@ -25,7 +26,7 @@ class CustomerCreate(CustomerBase):
 
 class CustomerUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = None
+    email: str | None = Field(default=None, max_length=255)
     address: str | None = None
     tax_id: str | None = Field(default=None, max_length=100)
     phone: str | None = Field(default=None, max_length=50)
@@ -46,11 +47,12 @@ class CustomerResponse(CustomerBase):
 # Tenant Profile Schemas
 # ---------------------------------------------------------------------------
 
+
 class TenantProfileBase(BaseModel):
     company_name: str = Field(..., max_length=255)
     address: str | None = None
     tax_id: str | None = Field(default=None, max_length=100)
-    email: EmailStr | None = None
+    email: str | None = Field(default=None, max_length=255)
     phone: str | None = Field(default=None, max_length=50)
     default_currency: str = Field(default="USD", min_length=3, max_length=3)
     invoice_prefix: str = Field(default="INV-", max_length=20)
@@ -67,7 +69,7 @@ class TenantProfileUpdate(BaseModel):
     company_name: str | None = Field(default=None, max_length=255)
     address: str | None = None
     tax_id: str | None = Field(default=None, max_length=100)
-    email: EmailStr | None = None
+    email: str | None = Field(default=None, max_length=255)
     phone: str | None = Field(default=None, max_length=50)
     default_currency: str | None = Field(default=None, min_length=3, max_length=3)
     invoice_prefix: str | None = Field(default=None, max_length=20)
@@ -88,6 +90,7 @@ class TenantProfileResponse(TenantProfileBase):
 # ---------------------------------------------------------------------------
 # Issued Invoice Line Item Schemas
 # ---------------------------------------------------------------------------
+
 
 class IssuedLineItemBase(BaseModel):
     line_number: int = Field(..., ge=1)
@@ -122,6 +125,7 @@ class IssuedLineItemResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Issued Invoice Schemas
 # ---------------------------------------------------------------------------
+
 
 class IssuedInvoiceCreate(BaseModel):
     customer_id: uuid.UUID | None = None
@@ -176,4 +180,3 @@ class IssuedInvoiceDetailResponse(IssuedInvoiceResponse):
     line_items: list[IssuedLineItemResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
-

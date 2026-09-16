@@ -1,6 +1,8 @@
 from datetime import date
 from decimal import Decimal
+
 from pydantic import BaseModel, ConfigDict, Field
+
 from app.schemas.inbound import InvoiceResponse
 
 
@@ -24,4 +26,3 @@ class VendorDetail(BaseModel):
     recent_invoices: list[InvoiceResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
-

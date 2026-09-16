@@ -1,5 +1,6 @@
 import uuid
 from decimal import Decimal
+
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -64,17 +65,14 @@ async def get_vendor_detail(
     vendor_name: str,
 ) -> VendorDetail | None:
     """Retrieve vendor aggregate details and recent invoices."""
-    stats_query = (
-        select(
-            func.count(Invoice.id).label("invoice_count"),
-            func.coalesce(func.sum(Invoice.total_amount), Decimal("0.00")).label("total_spend"),
-            func.max(Invoice.vendor_address).label("vendor_address"),
-            func.max(Invoice.vendor_tax_id).label("vendor_tax_id"),
-        )
-        .where(
-            Invoice.tenant_id == tenant_id,
-            Invoice.vendor_name == vendor_name,
-        )
+    stats_query = select(
+        func.count(Invoice.id).label("invoice_count"),
+        func.coalesce(func.sum(Invoice.total_amount), Decimal("0.00")).label("total_spend"),
+        func.max(Invoice.vendor_address).label("vendor_address"),
+        func.max(Invoice.vendor_tax_id).label("vendor_tax_id"),
+    ).where(
+        Invoice.tenant_id == tenant_id,
+        Invoice.vendor_name == vendor_name,
     )
     stats = (await db.execute(stats_query)).one_or_none()
     if not stats or stats.invoice_count == 0:
@@ -112,4 +110,3 @@ async def get_vendor_detail(
         currencies=currencies,
         recent_invoices=recent_invoices,
     )
-

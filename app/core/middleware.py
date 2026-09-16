@@ -1,9 +1,10 @@
 import uuid
 from contextvars import ContextVar
+
+from fastapi import Header, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
-from fastapi import Header, HTTPException, status
+from starlette.responses import JSONResponse, Response
 
 # Default tenant UUID for local development or unauthenticated testing
 DEFAULT_TENANT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
@@ -50,10 +51,9 @@ class TenantMiddleware(BaseHTTPMiddleware):
             try:
                 tenant_uuid = uuid.UUID(raw_tenant)
             except ValueError:
-                # If invalid UUID format is provided in header
-                raise HTTPException(
+                return JSONResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid X-Tenant-ID header: must be a valid UUID",
+                    content={"detail": "Invalid X-Tenant-ID header: must be a valid UUID"},
                 )
 
         token = current_tenant_var.set(tenant_uuid)
@@ -65,4 +65,3 @@ class TenantMiddleware(BaseHTTPMiddleware):
             return response
         finally:
             current_tenant_var.reset(token)
-

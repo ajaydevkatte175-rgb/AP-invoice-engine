@@ -53,6 +53,10 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             if tenant_id:
                 await session.execute(text(f"SET LOCAL app.current_tenant = '{tenant_id}'"))
             yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
         finally:
             await session.close()
 

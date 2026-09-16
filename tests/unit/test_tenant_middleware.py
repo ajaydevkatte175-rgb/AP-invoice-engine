@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -40,4 +41,3 @@ async def test_tenant_middleware_invalid_uuid():
         response = await client.get("/health")
         assert response.status_code == 400
         assert "Invalid X-Tenant-ID header" in response.json()["detail"]
-

@@ -1,16 +1,28 @@
 import uuid
 from decimal import Decimal
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.outbound import Customer, InvoiceCounter, IssuedInvoice, IssuedLineItem, TenantProfile
-from app.schemas.outbound import CustomerCreate, CustomerUpdate, IssuedInvoiceCreate, IssuedInvoiceUpdate
-
+from app.models.outbound import (
+    Customer,
+    InvoiceCounter,
+    IssuedInvoice,
+    IssuedLineItem,
+    TenantProfile,
+)
+from app.schemas.outbound import (
+    CustomerCreate,
+    CustomerUpdate,
+    IssuedInvoiceCreate,
+    IssuedInvoiceUpdate,
+)
 
 # ---------------------------------------------------------------------------
 # Invoice Counter Service (Rule 5: Gapless numbering with SELECT FOR UPDATE)
 # ---------------------------------------------------------------------------
+
 
 async def get_next_invoice_number(
     db: AsyncSession,
@@ -55,6 +67,7 @@ async def get_next_invoice_number(
 # ---------------------------------------------------------------------------
 # Customer Service
 # ---------------------------------------------------------------------------
+
 
 async def create_customer(
     db: AsyncSession,
@@ -153,6 +166,7 @@ async def delete_customer(
 # Issued Invoice Service (Rule 4: totals calculated in Python)
 # ---------------------------------------------------------------------------
 
+
 async def create_issued_invoice(
     db: AsyncSession,
     tenant_id: uuid.UUID,
@@ -177,7 +191,9 @@ async def create_issued_invoice(
                 unit_price=price,
                 total_amount=tot,
                 tax_rate=item.tax_rate,
-                tax_amount=(tot * item.tax_rate).quantize(Decimal("0.01")) if item.tax_rate else Decimal("0.00"),
+                tax_amount=(tot * item.tax_rate).quantize(Decimal("0.01"))
+                if item.tax_rate
+                else Decimal("0.00"),
             )
         )
 
@@ -295,4 +311,3 @@ async def update_issued_invoice_status(
     await db.flush()
     await db.refresh(invoice)
     return invoice
-

@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 from decimal import Decimal
-from typing import Any
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -9,10 +9,10 @@ from sqlalchemy.orm import selectinload
 from app.models.inbound import Document, Invoice, LineItem, ReviewItem, ValidationFlag
 from app.schemas.inbound import DocumentCreate, InvoiceCreate, InvoiceUpdate
 
-
 # ---------------------------------------------------------------------------
 # Document Service
 # ---------------------------------------------------------------------------
+
 
 async def create_document(
     db: AsyncSession,
@@ -51,6 +51,7 @@ async def get_document(
 # ---------------------------------------------------------------------------
 # Inbound Invoice Service
 # ---------------------------------------------------------------------------
+
 
 async def create_invoice(
     db: AsyncSession,
@@ -261,4 +262,3 @@ async def get_invoice_review_items(
     )
     res = await db.execute(stmt)
     return list(res.scalars().all())
-
