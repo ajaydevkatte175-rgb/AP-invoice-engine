@@ -140,3 +140,30 @@ Confirm 14 tables and that money columns show `numeric(14,2)`. STOP.
 
 ### VERIFY:
 - Run unit tests and verify API routes load correctly in the Swagger UI (`http://127.0.0.1:8000/docs`).
+
+## PHASE 4 — The AI layer
+
+### Objectives:
+Build the reusable `ailayer/` package containing:
+1. **Core Configuration & Types**:
+   - `types.py`, `errors.py`, and `config.py` (handling `ai.yaml` configuration).
+2. **Anthropic Provider Adapter (`ailayer/providers/anthropic.py`)**:
+   - Set `max_retries=0` on the SDK client (the router owns retries).
+   - Track token usage and compute execution cost.
+3. **Robust Infrastructure**:
+   - `router.py`: Failover chain with jittered exponential backoff.
+   - `budget.py`: Hard monthly ceiling check executed **before** each call.
+   - `prompts.py`: Loader for versioned markdown prompts featuring YAML frontmatter.
+   - `structured.py`: Schema enforcement featuring a bounded repair loop (max 2 attempts).
+   - `ledger.py`: Persistence layer writing one `llm_calls` row per call (including failed attempts).
+
+### Prompt Files:
+- `prompts/extract_invoice/v1.md`
+- `prompts/repair/v1.md`
+- **Constraint**: System prompt MUST explicitly state: *"Do NOT perform arithmetic. Report printed numbers exactly as shown."*
+
+### VERIFY:
+- Run unit tests without requiring a live API key:
+  ```bash
+  uv run pytest tests/unit/test_router.py tests/unit/test_structured.py -v
+  
