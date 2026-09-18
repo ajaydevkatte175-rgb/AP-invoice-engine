@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 from decimal import Decimal
-from typing import Any, Literal, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -66,7 +66,7 @@ class LLMResponse(BaseModel):
     raw_response: Any = None
 
 
-class StructuredExtractionResult[T](BaseModel):
+class StructuredExtractionResult(BaseModel, Generic[T]):
     """Container for the output of a structured extraction / repair cycle."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

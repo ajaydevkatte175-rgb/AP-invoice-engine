@@ -3,11 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.documents import router as documents_router
 from app.api.v1 import api_v1_router
 from app.core.config import settings
 from app.core.db import check_db_health, engine, engine_ro
 from app.core.logging import get_logger, setup_logging
 from app.core.middleware import TenantMiddleware
+from app.workers.worker import close_arq_redis
 
 logger = get_logger(__name__)
 
@@ -18,6 +20,7 @@ async def lifespan(app: FastAPI):
     logger.info("Application starting up", env=settings.APP_ENV)
     yield
     logger.info("Application shutting down")
+    await close_arq_redis()
     await engine.dispose()
     await engine_ro.dispose()
 
@@ -40,6 +43,7 @@ app.add_middleware(
 )
 
 # Routers
+app.include_router(documents_router)
 app.include_router(api_v1_router)
 
 

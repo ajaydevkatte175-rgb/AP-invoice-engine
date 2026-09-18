@@ -167,3 +167,27 @@ Build the reusable `ailayer/` package containing:
   ```bash
   uv run pytest tests/unit/test_router.py tests/unit/test_structured.py -v
   
+
+## PHASE 5 — API, worker, pipeline, & logical duplicates
+
+`app/api/deps.py` — API key auth using `secrets.compare_digest`
+`app/api/documents.py` — `POST /documents` (202, SHA256 duplicate detection)
+`app/workers/tasks.py` — pipeline: preprocess → extract → merge → confidence → validate → logical duplicate check `(vendor_name, invoice_number)` → persist → route to review or complete → audit log. Thread correlation ID through everything.
+
+**VERIFY:**
+
+```bash
+uv run python scripts/generate_invoices.py --count 3
+make run & make worker &
+KEY=$(grep ^API_KEY .env | cut -d= -f2)
+curl -s -X POST localhost:8000/documents -H "X-API-Key: $KEY" -F "file=@data/eval/pdfs/invoice_0000.pdf"
+sleep 20
+curl -s localhost:8000/documents/latest -H "X-API-Key: $KEY" | python3 -m json.tool
+
+```
+
+Show extracted invoice with line items and flags. STOP.
+
+---
+
+

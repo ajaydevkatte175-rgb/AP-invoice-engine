@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     DATABASE_URL_RO: str = "postgresql+asyncpg://invoice_ro:readonlypass@localhost:5432/invoicedb"
 
     # Redis & Queue
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = "redis://127.0.0.1:6379/0"
 
     # LLM & AI
     ANTHROPIC_API_KEY: str = ""
