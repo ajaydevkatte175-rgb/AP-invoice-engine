@@ -2,6 +2,7 @@ import re
 import uuid
 from datetime import date
 from decimal import Decimal
+
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 

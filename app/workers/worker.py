@@ -1,4 +1,5 @@
 from typing import ClassVar
+
 from arq import create_pool
 from arq.connections import ArqRedis, RedisSettings
 

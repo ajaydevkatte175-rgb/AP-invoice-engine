@@ -1,9 +1,10 @@
 import hashlib
 import io
 from pathlib import Path
-from pydantic import BaseModel, Field
+
 import pypdf
 import structlog
+from pydantic import BaseModel, Field
 
 logger = structlog.get_logger(__name__)
 

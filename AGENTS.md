@@ -191,3 +191,31 @@ Show extracted invoice with line items and flags. STOP.
 ---
 
 
+## PHASE 6 — SQL guard, RLS enforcement, & Agent
+
+`app/services/agent/sql_guard.py` using sqlglot.
+`scripts/create_readonly_role.sql` — `invoice_ro` role with SELECT only, `statement_timeout = '5s'`.
+
+`tests/unit/test_sql_guard.py` must cover:
+
+* rejects mutation statements (DELETE, DROP, etc.)
+* rejects stacked statements
+* rejects tables outside allowlist
+* injects tenant filter AND forces `SET LOCAL app.current_tenant = '...'` for RLS.
+
+`app/services/agent/query_agent.py` — question → SQL plan → guard → execute on read-only engine with RLS tenant context → second call to explain returned rows.
+`app/api/chat.py` — `POST /chat/ask`.
+
+**VERIFY:**
+
+```bash
+uv run pytest tests/unit/test_sql_guard.py -v
+docker compose exec -T postgres psql -U postgres -d invoicedb < scripts/create_readonly_role.sql
+curl -s -X POST localhost:8000/chat/ask -H "X-API-Key: $KEY" -H "Content-Type: application/json" -d '{"question":"What is total spend by vendor and currency?"}' | python3 -m json.tool
+
+```
+
+Every guard test green, agent returns answer + SQL. STOP.
+
+---
+

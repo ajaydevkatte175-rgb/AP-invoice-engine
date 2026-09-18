@@ -2,9 +2,10 @@ import argparse
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 VENDORS = [
@@ -26,12 +27,12 @@ VENDORS = [
 ]
 
 CATALOG = [
-    ("Precision Metal Fasteners Box 500", Decimal("2"), Decimal("45.00")),
-    ("High-Grade Machine Lubricant 5L", Decimal("1"), Decimal("35.00")),
-    ("Industrial Safety Goggles Pack 10", Decimal("3"), Decimal("15.00")),
-    ("Cloud Server Compute Standard Node", Decimal("1"), Decimal("120.00")),
-    ("Dedicated IPv4 Address Range Block", Decimal("4"), Decimal("25.00")),
-    ("International Pallet Freight Handling", Decimal("1"), Decimal("350.00")),
+    ("Precision Metal Fasteners Box 500", Decimal(2), Decimal("45.00")),
+    ("High-Grade Machine Lubricant 5L", Decimal(1), Decimal("35.00")),
+    ("Industrial Safety Goggles Pack 10", Decimal(3), Decimal("15.00")),
+    ("Cloud Server Compute Standard Node", Decimal(1), Decimal("120.00")),
+    ("Dedicated IPv4 Address Range Block", Decimal(4), Decimal("25.00")),
+    ("International Pallet Freight Handling", Decimal(1), Decimal("350.00")),
 ]
 
 

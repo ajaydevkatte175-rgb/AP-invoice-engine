@@ -1,6 +1,7 @@
 import uuid
 from decimal import Decimal
 from pathlib import Path
+
 import structlog
 from sqlalchemy import select, text
 
