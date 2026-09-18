@@ -1,7 +1,8 @@
 import uuid
 from datetime import date
 from decimal import Decimal
-from typing import Any, Generic, Literal, TypeVar
+from typing import Any, Literal, TypeVar
+
 from pydantic import BaseModel, ConfigDict, Field
 
 T = TypeVar("T")
@@ -65,7 +66,7 @@ class LLMResponse(BaseModel):
     raw_response: Any = None
 
 
-class StructuredExtractionResult(BaseModel, Generic[T]):
+class StructuredExtractionResult[T](BaseModel):
     """Container for the output of a structured extraction / repair cycle."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -114,4 +115,3 @@ class ExtractedInvoice(BaseModel):
     tax_breakdown: dict[str, Any] | None = None
     line_items: list[ExtractedLineItem] = Field(default_factory=list)
     notes: str | None = None
-

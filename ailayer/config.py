@@ -2,7 +2,7 @@ import os
 from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+
 import yaml
 from pydantic import BaseModel, Field
 
@@ -118,11 +118,10 @@ def calculate_cost(
     spec = config.get_model_spec(model_name)
     prompt_tokens_dec = Decimal(prompt_tokens)
     completion_tokens_dec = Decimal(completion_tokens)
-    one_million = Decimal("1000000")
+    one_million = Decimal(1000000)
 
     input_cost = (prompt_tokens_dec / one_million) * spec.input_price_per_million
     output_cost = (completion_tokens_dec / one_million) * spec.output_price_per_million
 
     # Quantize to 6 decimal places for token level micro-billing
     return (input_cost + output_cost).quantize(Decimal("0.000001"))
-

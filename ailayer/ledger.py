@@ -1,5 +1,5 @@
-import uuid
 from decimal import Decimal
+
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -72,4 +72,3 @@ class LLMLedger:
             # We log the persistence failure without crashing the pipeline,
             # as logging shouldn't break the user request if the DB connection blips
             logger.error("Failed to write llm_calls ledger record", error=str(e))
-

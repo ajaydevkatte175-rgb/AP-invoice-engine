@@ -10,10 +10,7 @@ class BaseLLMProvider(ABC):
     @abstractmethod
     def name(self) -> str:
         """Name of the provider (e.g. 'anthropic')."""
-        pass
 
     @abstractmethod
     async def complete(self, request: LLMRequest) -> LLMResponse:
         """Execute a completion request and return a standardized response."""
-        pass
-

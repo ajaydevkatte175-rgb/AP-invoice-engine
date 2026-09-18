@@ -23,6 +23,7 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
+async_session_factory = AsyncSessionLocal
 
 # Read-only async engine for AI agent queries
 engine_ro = create_async_engine(

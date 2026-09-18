@@ -1,5 +1,6 @@
 import time
 from typing import Any
+
 import anthropic
 
 from ailayer.config import AIConfig, calculate_cost, load_ai_config
@@ -153,4 +154,3 @@ class AnthropicProvider(BaseLLMProvider):
                 message=f"Unexpected error calling Anthropic: {e}",
                 provider=self.name,
             ) from e
-

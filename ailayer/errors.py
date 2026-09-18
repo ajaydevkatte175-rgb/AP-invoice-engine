@@ -10,8 +10,6 @@ class AIError(Exception):
 class BudgetExceededError(AIError):
     """Raised when monthly LLM budget ceiling has been reached or would be exceeded."""
 
-    pass
-
 
 class ProviderError(AIError):
     """Base exception for provider communication or API errors."""
@@ -31,19 +29,13 @@ class ProviderError(AIError):
 class RateLimitError(ProviderError):
     """Provider rate limit or quota reached."""
 
-    pass
-
 
 class AuthenticationError(ProviderError):
     """API key invalid, missing, or unauthorized."""
 
-    pass
-
 
 class ModelUnavailableError(ProviderError):
     """Requested model is overloaded, down, or not found."""
-
-    pass
 
 
 class StructuredOutputError(AIError):
@@ -79,6 +71,3 @@ class MaxRepairAttemptsExceeded(StructuredOutputError):
 
 class PromptNotFoundError(AIError):
     """Prompt template file or version not found."""
-
-    pass
-
