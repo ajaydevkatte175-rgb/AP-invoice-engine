@@ -219,3 +219,33 @@ Every guard test green, agent returns answer + SQL. STOP.
 
 ---
 
+
+## PHASE 7 — Insights API & Outbound Invoice Generation
+
+### 7a. Insights API (`app/api/insights.py`)
+
+Deterministic SQL: `/insights/summary`, `/insights/vendors` (grouped by vendor AND currency), `/insights/trend`, `/insights/price-drift` (unit price changes over 3+ invoices), `/insights/duplicates`, `/insights/aging`, `/insights/vendor-quality`.
+
+### 7b. Invoice Generation
+
+* `app/services/issuing/numbering.py`: `next\_invoice\_number()` using `SELECT ... FOR UPDATE` on `invoice\_counters`. Gapless, per tenant.
+* `app/services/issuing/totals.py`: `compute\_totals()` pure Decimal arithmetic.
+* `app/services/issuing/pdf.py`: reportlab A4 layout generator.
+* `app/services/issuing/draft\_from\_text.py`: LLM parses prompt to draft fields, **discard any LLM-generated totals and recompute with `compute\_totals()\*\*`.
+* `app/api/issuing.py`: Endpoints for creation, draft-from-text, status transitions, and PDF streaming.
+
+**VERIFY:**
+
+```bash
+
+uv run pytest tests/unit/test\_totals.py tests/unit/test\_numbering.py -v
+
+curl -s localhost:8000/insights/price-drift -H "X-API-Key: $KEY" | python3 -m json.tool
+
+
+
+```
+
+Totals correct, concurrency numbering test passes. STOP.
+
+---
