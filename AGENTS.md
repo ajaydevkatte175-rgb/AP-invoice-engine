@@ -249,3 +249,70 @@ curl -s localhost:8000/insights/price-drift -H "X-API-Key: $KEY" | python3 -m js
 Totals correct, concurrency numbering test passes. STOP.
 
 ---
+
+## PHASE 8 — Streamlit UI
+
+Multi-page app in `ui/`:
+
+* `Home.py`: Headline metrics, navigation.
+* `pages/1\\\\\\\_📸\\\\\\\_Scan\\\\\\\_Upload.py`: `st.camera\\\\\\\_input` + `st.file\\\\\\\_uploader`, live polling, instant summary card.
+* `pages/2\\\\\\\_📚\\\\\\\_Invoices.py`: Searchable, filterable table.
+* `pages/3\\\\\\\_📄\\\\\\\_Last\\\\\\\_Result.py`: Detail card for latest processed invoice.
+* `pages/4\\\\\\\_📊\\\\\\\_Insights.py`: Plotly charts for spend, unit price drift, duplicate risks.
+* `pages/5\\\\\\\_✅\\\\\\\_Review\\\\\\\_Queue.py`: Image on left, editable form on right, live math check turning green on fix.
+* `pages/6\\\\\\\_🧾\\\\\\\_Create\\\\\\\_Invoice.py`: Natural language draft box, `st.data\\\\\\\_editor` for line items, live read-only totals panel, PDF preview/download.
+* `pages/7\\\\\\\_🤖\\\\\\\_Ask\\\\\\\_AI.py`: Natural language chat with expandable SQL query inspection panel.
+
+**VERIFY:**
+
+```bash
+
+uv run python scripts/seed.py --invoices 25
+
+make ui
+
+
+
+```
+
+Walk through: Camera upload → Summary card → Review Queue → Create Outbound Invoice → Ask AI. STOP.
+
+---
+
+## PHASE 9 — Evaluation, CI, & Docker Deployment
+
+* `scripts/generate\\\\\\\_invoices.py`: Synthetic test dataset with ground truth and ~15% injected math errors.
+* `scripts/run\\\\\\\_eval.py`: Produces `docs/evaluation.md` evaluating accuracy, F1 score, and % of injected errors caught.
+* `Dockerfile`: Installed with `poppler-utils`, `libgl1`, `libglib2.0-0`.
+* `docker-compose.prod.yml`: API, worker (sharing uploads volume), UI, Postgres, Redis.
+
+**VERIFY:**
+
+```bash
+
+unset ANTHROPIC\\\\\\\_API\\\\\\\_KEY \\\\\\\&\\\\\\\& uv run pytest -q
+
+uv run python scripts/run\\\\\\\_eval.py --limit 10
+
+docker compose -f docker-compose.prod.yml up -d --build
+
+curl -s localhost:8000/health
+
+
+
+```
+
+Tests pass without API key set. `docs/evaluation.md` generated. STOP.
+
+```
+
+
+
+\\\\---
+
+
+
+
+
+
+

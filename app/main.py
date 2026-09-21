@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.chat import router as chat_router
 from app.api.documents import router as documents_router
+from app.api.insights import router as insights_router
+from app.api.issuing import router as issuing_router
 from app.api.v1 import api_v1_router
 from app.core.config import settings
 from app.core.db import check_db_health, engine, engine_ro
@@ -46,6 +48,8 @@ app.add_middleware(
 # Routers
 app.include_router(documents_router)
 app.include_router(chat_router)
+app.include_router(insights_router)
+app.include_router(issuing_router)
 app.include_router(api_v1_router)
 
 

@@ -97,7 +97,7 @@ class IssuedLineItemBase(BaseModel):
     description: str
     quantity: Decimal = Field(default=Decimal("1.0000"), ge=Decimal("0.0001"))
     unit_price: Decimal = Field(..., decimal_places=2)
-    tax_rate: Decimal | None = Field(default=Decimal("0.0000"), decimal_places=4)
+    tax_rate: Decimal | None = Field(default=None, decimal_places=4)
 
 
 class IssuedLineItemCreate(IssuedLineItemBase):
