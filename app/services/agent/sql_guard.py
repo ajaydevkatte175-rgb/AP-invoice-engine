@@ -15,16 +15,16 @@ NON-NEGOTIABLE ARCHITECTURAL RULES (Rules 6 & 7):
 """
 
 import uuid
-from typing import Any
-from decimal import Decimal
 from datetime import date, datetime
+from decimal import Decimal
+from typing import Any
+
 import sqlglot
-from sqlglot import exp
+import structlog
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-import structlog
+from sqlglot import exp
 
-from app.core.config import settings
 from app.core.db import AsyncSessionLocalRO
 
 logger = structlog.get_logger(__name__)

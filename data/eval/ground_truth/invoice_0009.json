@@ -1,0 +1,38 @@
+{
+  "invoice_number": "INV-2026-0009",
+  "vendor_name": "Apex Cloud Technologies",
+  "vendor_tax_id": "US987654321",
+  "vendor_address": "456 Silicon Ave, San Jose, CA, USA",
+  "invoice_date": "2026-09-10",
+  "due_date": "2026-10-10",
+  "currency": "USD",
+  "subtotal": "170.00",
+  "tax_amount": "34.00",
+  "total_amount": "204.00",
+  "true_total": "204.00",
+  "has_injected_math_error": false,
+  "expected_flags": [],
+  "line_items": [
+    {
+      "line_number": 1,
+      "description": "Precision Metal Fasteners Box 500",
+      "quantity": "2",
+      "unit_price": "45.00",
+      "line_total": "90.00"
+    },
+    {
+      "line_number": 2,
+      "description": "High-Grade Machine Lubricant 5L",
+      "quantity": "1",
+      "unit_price": "35.00",
+      "line_total": "35.00"
+    },
+    {
+      "line_number": 3,
+      "description": "Industrial Safety Goggles Pack 10",
+      "quantity": "3",
+      "unit_price": "15.00",
+      "line_total": "45.00"
+    }
+  ]
+}

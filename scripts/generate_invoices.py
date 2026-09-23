@@ -1,4 +1,7 @@
+"""Generate synthetic evaluation invoices in PDF format with ground truth JSON and injected errors."""
+
 import argparse
+import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -24,6 +27,11 @@ VENDORS = [
         "tax_id": "DE554433221",
         "address": "Hafenstrasse 12, Hamburg, Germany",
     },
+    {
+        "name": "SaaS Platform Partners",
+        "tax_id": "US112233445",
+        "address": "789 Market Street, San Francisco, CA, USA",
+    },
 ]
 
 CATALOG = [
@@ -33,6 +41,8 @@ CATALOG = [
     ("Cloud Server Compute Standard Node", Decimal(1), Decimal("120.00")),
     ("Dedicated IPv4 Address Range Block", Decimal(4), Decimal("25.00")),
     ("International Pallet Freight Handling", Decimal(1), Decimal("350.00")),
+    ("Enterprise Support SLA 24/7", Decimal(1), Decimal("500.00")),
+    ("Hardware Maintenance Retainer", Decimal(2), Decimal("85.00")),
 ]
 
 
@@ -41,7 +51,9 @@ def generate_single_invoice_pdf(
     index: int,
     vendor: dict,
     items: list[tuple[str, Decimal, Decimal]],
-) -> None:
+    inject_math_error: bool = False,
+) -> dict:
+    """Generate a single PDF invoice and return its ground-truth metadata."""
     doc = SimpleDocTemplate(
         str(output_path),
         pagesize=letter,
@@ -128,10 +140,10 @@ def generate_single_invoice_pdf(
     ]
 
     subtotal = Decimal("0.00")
+    ground_truth_items = []
     for idx, (desc, qty, unit_price) in enumerate(items, start=1):
         line_total = (qty * unit_price).quantize(Decimal("0.01"))
         subtotal += line_total
-        # Pipe-delimited plain text pattern included for robust extraction
         desc_text = f"{desc} | Qty: {qty} | Price: {unit_price:.2f} | Total: {line_total:.2f}"
         table_data.append(
             [
@@ -142,15 +154,30 @@ def generate_single_invoice_pdf(
                 f"{line_total:.2f}",
             ]
         )
+        ground_truth_items.append(
+            {
+                "line_number": idx,
+                "description": desc,
+                "quantity": str(qty),
+                "unit_price": str(unit_price),
+                "line_total": str(line_total),
+            }
+        )
 
     tax_rate = Decimal("0.20")  # 20%
     tax_amount = (subtotal * tax_rate).quantize(Decimal("0.01"))
-    total_amount = subtotal + tax_amount
+    true_total = subtotal + tax_amount
+
+    # Deliberately inject arithmetic error on ~15% of invoices
+    if inject_math_error:
+        printed_total = true_total + Decimal("35.00")
+    else:
+        printed_total = true_total
 
     # Totals rows
     table_data.append(["", "", "", Paragraph("<b>Subtotal:</b>", bold_style), f"{subtotal:.2f}"])
     table_data.append(["", "", "", Paragraph("<b>Tax (20%):</b>", bold_style), f"{tax_amount:.2f}"])
-    table_data.append(["", "", "", Paragraph("<b>Total:</b>", bold_style), f"{total_amount:.2f}"])
+    table_data.append(["", "", "", Paragraph("<b>Total:</b>", bold_style), f"{printed_total:.2f}"])
 
     item_table = Table(table_data, colWidths=[30, 260, 70, 90, 90])
     item_table.setStyle(
@@ -173,38 +200,69 @@ def generate_single_invoice_pdf(
     summary_text = (
         f"Subtotal: {subtotal:.2f} USD\n"
         f"Tax Amount: {tax_amount:.2f} USD\n"
-        f"Total Amount: {total_amount:.2f} USD\n"
+        f"Total Amount: {printed_total:.2f} USD\n"
         f"Generated: {datetime.now().isoformat()}\n"
     )
     story.append(Paragraph(f"<font size=8 color='#64748b'>{summary_text}</font>", normal_style))
 
     doc.build(story)
 
+    # Return ground truth structure
+    return {
+        "invoice_number": invoice_number,
+        "vendor_name": vendor["name"],
+        "vendor_tax_id": vendor["tax_id"],
+        "vendor_address": vendor["address"],
+        "invoice_date": inv_date.isoformat(),
+        "due_date": due_date.isoformat(),
+        "currency": "USD",
+        "subtotal": str(subtotal),
+        "tax_amount": str(tax_amount),
+        "total_amount": str(printed_total),
+        "true_total": str(true_total),
+        "has_injected_math_error": inject_math_error,
+        "expected_flags": ["ARITHMETIC_MISMATCH"] if inject_math_error else [],
+        "line_items": ground_truth_items,
+    }
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate synthetic evaluation invoices in PDF format")
-    parser.add_argument("--count", type=int, default=3, help="Number of invoices to generate")
+    parser = argparse.ArgumentParser(description="Generate synthetic evaluation invoices in PDF format with ground truth JSON")
+    parser.add_argument("--count", type=int, default=10, help="Number of invoices to generate")
     parser.add_argument("--output-dir", type=str, default="data/eval/pdfs", help="Directory to save PDFs")
+    parser.add_argument("--gt-dir", type=str, default="data/eval/ground_truth", help="Directory to save ground truth JSON")
+    parser.add_argument("--error-rate", type=float, default=0.15, help="Fraction of invoices with injected math errors (default ~15%)")
     args = parser.parse_args()
 
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    gt_dir = Path(args.gt_dir)
+    gt_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Generating {args.count} invoices into {out_dir.resolve()}...")
+    print(f"Generating {args.count} invoices (with ~{int(args.error_rate * 100)}% injected math errors)...")
 
+    error_count = 0
     for i in range(args.count):
         vendor = VENDORS[i % len(VENDORS)]
         items_slice = CATALOG[i % 3 : (i % 3) + 3]
         if not items_slice:
             items_slice = CATALOG[:3]
 
-        file_path = out_dir / f"invoice_{i:04d}.pdf"
-        generate_single_invoice_pdf(file_path, i, vendor, items_slice)
-        print(f"  Generated: {file_path}")
+        # Inject math error on ~15% (e.g. index 3, 10, etc.)
+        inject_error = (i % 7 == 3) if args.count >= 7 else (i == 1)
+        if inject_error:
+            error_count += 1
 
-    print("All invoices successfully generated.")
+        pdf_path = out_dir / f"invoice_{i:04d}.pdf"
+        gt_data = generate_single_invoice_pdf(pdf_path, i, vendor, items_slice, inject_math_error=inject_error)
+
+        gt_path = gt_dir / f"invoice_{i:04d}.json"
+        gt_path.write_text(json.dumps(gt_data, indent=2))
+
+        print(f"  [{i+1}/{args.count}] Generated {pdf_path.name} (Math Error: {inject_error})")
+
+    print(f"Done: {args.count} invoices generated ({error_count} with injected math errors).")
 
 
 if __name__ == "__main__":
     main()
-

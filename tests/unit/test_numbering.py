@@ -7,6 +7,7 @@ Use a counter row with SELECT ... FOR UPDATE. Never COUNT(*) + 1.
 
 import asyncio
 import uuid
+
 import pytest
 from sqlalchemy import text
 

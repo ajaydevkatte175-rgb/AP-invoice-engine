@@ -1,16 +1,6 @@
-"""Evaluation script stub."""
+"""Evaluation entry point delegating to scripts.run_eval."""
 
-import asyncio
-
-from app.core.logging import get_logger, setup_logging
-
-logger = get_logger(__name__)
-
-
-async def main():
-    setup_logging()
-    logger.info("Eval script placeholder - ready for extraction evaluation in upcoming phases")
-
+from scripts.run_eval import main
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

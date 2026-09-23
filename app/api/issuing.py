@@ -14,7 +14,7 @@ from app.api.deps import verify_api_key
 from app.core.db import get_db
 from app.core.logging import get_logger
 from app.core.middleware import tenant_dependency
-from app.models.outbound import Customer, IssuedInvoice, IssuedLineItem, TenantProfile
+from app.models.outbound import IssuedInvoice, IssuedLineItem, TenantProfile
 from app.schemas.outbound import (
     IssuedInvoiceCreate,
     IssuedInvoiceDetailResponse,

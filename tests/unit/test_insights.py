@@ -11,11 +11,12 @@ Covers:
 - Authentication via X-API-Key
 """
 
+import uuid
 from datetime import date, timedelta
 from decimal import Decimal
-import uuid
-from httpx import ASGITransport, AsyncClient
+
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 
 from app.core.config import settings
@@ -43,9 +44,9 @@ async def seeded_insights_tenant():
                 due_date=today - timedelta(days=10 * (4 - i)),
                 vendor_name="Alpha Corp",
                 currency="USD",
-                subtotal=price * Decimal("2"),
+                subtotal=price * Decimal(2),
                 tax_amount=Decimal("0.00"),
-                total_amount=price * Decimal("2"),
+                total_amount=price * Decimal(2),
                 status="completed",
                 extraction_confidence=Decimal("0.9500"),
             )
@@ -59,7 +60,7 @@ async def seeded_insights_tenant():
                 description="Standard Widget",
                 quantity=Decimal("2.0000"),
                 unit_price=price,
-                total_amount=price * Decimal("2"),
+                total_amount=price * Decimal(2),
             )
             session.add(li)
 

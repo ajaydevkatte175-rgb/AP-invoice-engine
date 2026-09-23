@@ -1,0 +1,40 @@
+{
+  "invoice_number": "INV-2026-0003",
+  "vendor_name": "SaaS Platform Partners",
+  "vendor_tax_id": "US112233445",
+  "vendor_address": "789 Market Street, San Francisco, CA, USA",
+  "invoice_date": "2026-09-04",
+  "due_date": "2026-10-04",
+  "currency": "USD",
+  "subtotal": "170.00",
+  "tax_amount": "34.00",
+  "total_amount": "239.00",
+  "true_total": "204.00",
+  "has_injected_math_error": true,
+  "expected_flags": [
+    "ARITHMETIC_MISMATCH"
+  ],
+  "line_items": [
+    {
+      "line_number": 1,
+      "description": "Precision Metal Fasteners Box 500",
+      "quantity": "2",
+      "unit_price": "45.00",
+      "line_total": "90.00"
+    },
+    {
+      "line_number": 2,
+      "description": "High-Grade Machine Lubricant 5L",
+      "quantity": "1",
+      "unit_price": "35.00",
+      "line_total": "35.00"
+    },
+    {
+      "line_number": 3,
+      "description": "Industrial Safety Goggles Pack 10",
+      "quantity": "3",
+      "unit_price": "15.00",
+      "line_total": "45.00"
+    }
+  ]
+}

@@ -1,11 +1,7 @@
-import streamlit as st
+"""Streamlit entry point redirecting to Home.py."""
 
-st.set_page_config(
-    page_title="AP Invoice Engine",
-    page_icon="🧾",
-    layout="wide",
-)
+import runpy
+from pathlib import Path
 
-st.title("AP Invoice Engine")
-st.markdown("Automated AP Invoice Extraction, Deterministic Validation, and AR Issuance Platform.")
-st.info("Phase 1 scaffold initialized successfully.")
+home_file = Path(__file__).parent / "Home.py"
+runpy.run_path(str(home_file), run_name="__main__")

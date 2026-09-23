@@ -7,7 +7,6 @@ NON-NEGOTIABLE RULES:
 """
 
 from decimal import Decimal
-import pytest
 
 from app.services.issuing.totals import (
     compute_totals,

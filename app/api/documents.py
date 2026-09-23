@@ -3,7 +3,7 @@ from pathlib import Path
 
 import structlog
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -241,4 +241,41 @@ async def get_document(
         "sha256_hash": document.sha256_hash,
         "created_at": document.created_at.isoformat() if document.created_at else None,
     }
+
+
+@router.get("/{document_id}/file")
+async def get_document_file(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: uuid.UUID = Depends(tenant_dependency),
+    _api_key: str = Depends(verify_api_key),
+):
+    """Retrieve raw document file content (PDF or image)."""
+    stmt = select(Document).where(
+        Document.id == document_id,
+        Document.tenant_id == tenant_id,
+    )
+    res = await db.execute(stmt)
+    document = res.scalar_one_or_none()
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    file_path = Path(document.storage_path)
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document file not found on disk",
+        )
+
+    content = file_path.read_bytes()
+    return Response(
+        content=content,
+        media_type=document.mime_type or "application/octet-stream",
+        headers={"Content-Disposition": f'inline; filename="{document.filename}"'},
+    )
+
 
