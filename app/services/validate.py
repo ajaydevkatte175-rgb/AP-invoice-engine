@@ -12,8 +12,25 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 COMMON_ISO_CURRENCIES = {
-    "USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "CNY", "INR", "NZD",
-    "SGD", "HKD", "SEK", "NOK", "DKK", "ZAR", "MXN", "BRL", "PLN",
+    "USD",
+    "EUR",
+    "GBP",
+    "CAD",
+    "AUD",
+    "JPY",
+    "CHF",
+    "CNY",
+    "INR",
+    "NZD",
+    "SGD",
+    "HKD",
+    "SEK",
+    "NOK",
+    "DKK",
+    "ZAR",
+    "MXN",
+    "BRL",
+    "PLN",
 }
 
 ROUNDING_TOLERANCE = Decimal("0.02")
@@ -231,4 +248,3 @@ def validate_invoice_data(data: InvoiceValidationData) -> ValidationResult:
         has_warnings=has_warnings,
         flags=flags,
     )
-

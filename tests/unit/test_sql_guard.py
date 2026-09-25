@@ -220,4 +220,3 @@ class TestRLSTenantContextEnforcement:
 
         second_call_sql = str(calls[1][0][0])
         assert f"invoices.tenant_id = '{TEST_TENANT_ID}'" in second_call_sql
-

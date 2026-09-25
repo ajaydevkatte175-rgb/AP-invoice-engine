@@ -1,8 +1,7 @@
 """Scan & Upload - Camera capture and file uploader with live polling and instant summary."""
 
-import io
 import time
-from typing import Any
+
 import streamlit as st
 
 from ui.lib.api_client import APIClient
@@ -57,7 +56,9 @@ if uploaded_bytes and file_name:
         with st.status("Ingesting document and extracting data...", expanded=True) as status_box:
             st.write("📤 Uploading document to API backend...")
             try:
-                res = client.upload_document(uploaded_bytes, filename=file_name, mime_type=mime_type)
+                res = client.upload_document(
+                    uploaded_bytes, filename=file_name, mime_type=mime_type
+                )
             except Exception as e:
                 status_box.update(label="Upload failed", state="error", expanded=True)
                 st.error(f"Failed to upload document: {e}")
@@ -68,9 +69,13 @@ if uploaded_bytes and file_name:
 
             if is_dup:
                 status_box.update(label="Duplicate file detected", state="complete")
-                st.warning("⚠️ This document was previously uploaded (SHA-256 match). Showing existing record.")
+                st.warning(
+                    "⚠️ This document was previously uploaded (SHA-256 match). Showing existing record."
+                )
             else:
-                st.write("🔍 Queued in background worker pipeline. Extracting fields and validating arithmetic...")
+                st.write(
+                    "🔍 Queued in background worker pipeline. Extracting fields and validating arithmetic..."
+                )
                 # Poll for completion
                 max_polls = 20
                 completed = False
@@ -104,7 +109,9 @@ if uploaded_bytes and file_name:
             card_col1, card_col2, card_col3 = st.columns([2, 1, 1])
             with card_col1:
                 st.subheader(f"{inv.get('vendor_name') or 'Unknown Vendor'}")
-                st.caption(f"Invoice #: **{inv.get('invoice_number') or 'N/A'}** | File: {file_name}")
+                st.caption(
+                    f"Invoice #: **{inv.get('invoice_number') or 'N/A'}** | File: {file_name}"
+                )
             with card_col2:
                 st.write("**Status:**")
                 render_status_pill(inv.get("status", "completed"))
@@ -115,11 +122,18 @@ if uploaded_bytes and file_name:
             st.markdown("---")
             m1, m2, m3, m4 = st.columns(4)
             with m1:
-                st.metric("Total Amount", format_currency(inv.get("total_amount"), inv.get("currency", "USD")))
+                st.metric(
+                    "Total Amount",
+                    format_currency(inv.get("total_amount"), inv.get("currency", "USD")),
+                )
             with m2:
-                st.metric("Subtotal", format_currency(inv.get("subtotal"), inv.get("currency", "USD")))
+                st.metric(
+                    "Subtotal", format_currency(inv.get("subtotal"), inv.get("currency", "USD"))
+                )
             with m3:
-                st.metric("Tax Amount", format_currency(inv.get("tax_amount"), inv.get("currency", "USD")))
+                st.metric(
+                    "Tax Amount", format_currency(inv.get("tax_amount"), inv.get("currency", "USD"))
+                )
             with m4:
                 st.metric("Line Items Count", len(items))
 
@@ -136,7 +150,9 @@ if uploaded_bytes and file_name:
             act1, act2, act3 = st.columns(3)
             with act1:
                 if inv.get("status") == "needs_review" or flags:
-                    if st.button("🔎 Review in Human Queue", type="primary", use_container_width=True):
+                    if st.button(
+                        "🔎 Review in Human Queue", type="primary", use_container_width=True
+                    ):
                         st.switch_page("pages/5_✅_Review_Queue.py")
             with act2:
                 if st.button("📄 View Full Result", use_container_width=True):
@@ -145,7 +161,8 @@ if uploaded_bytes and file_name:
                 if st.button("📚 View All Invoices", use_container_width=True):
                     st.switch_page("pages/2_📚_Invoices.py")
         else:
-            st.info("Document uploaded successfully. Processing will update record in Invoices Directory.")
+            st.info(
+                "Document uploaded successfully. Processing will update record in Invoices Directory."
+            )
             if st.button("Go to Invoices Directory"):
                 st.switch_page("pages/2_📚_Invoices.py")
-

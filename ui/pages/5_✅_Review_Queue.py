@@ -1,11 +1,12 @@
 """Review Queue - Side-by-side human review UI with live arithmetic validation."""
 
 from decimal import Decimal
+
 import pandas as pd
 import streamlit as st
 
 from ui.lib.api_client import APIClient
-from ui.lib.formatters import format_currency, render_confidence_metric, render_status_pill
+from ui.lib.formatters import format_currency
 
 st.set_page_config(page_title="Review Queue | AP Invoice Engine", page_icon="✅", layout="wide")
 
@@ -94,7 +95,7 @@ with col_left:
             f"""
             <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 40px; text-align: center; color: #64748b;">
                 <h4>Document Preview</h4>
-                <p>File reference: {active_inv.get('document_id')}</p>
+                <p>File reference: {active_inv.get("document_id")}</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -123,15 +124,23 @@ with col_right:
     with st.form("review_form"):
         r1_c1, r1_c2 = st.columns(2)
         with r1_c1:
-            vendor_name = st.text_input("Vendor / Supplier Name", value=header.get("vendor_name") or "")
+            vendor_name = st.text_input(
+                "Vendor / Supplier Name", value=header.get("vendor_name") or ""
+            )
         with r1_c2:
-            invoice_number = st.text_input("Invoice Number", value=header.get("invoice_number") or "")
+            invoice_number = st.text_input(
+                "Invoice Number", value=header.get("invoice_number") or ""
+            )
 
         r2_c1, r2_c2, r2_c3 = st.columns(3)
         with r2_c1:
-            invoice_date = st.text_input("Invoice Date (YYYY-MM-DD)", value=str(header.get("invoice_date") or ""))
+            invoice_date = st.text_input(
+                "Invoice Date (YYYY-MM-DD)", value=str(header.get("invoice_date") or "")
+            )
         with r2_c2:
-            due_date = st.text_input("Due Date (YYYY-MM-DD)", value=str(header.get("due_date") or ""))
+            due_date = st.text_input(
+                "Due Date (YYYY-MM-DD)", value=str(header.get("due_date") or "")
+            )
         with r2_c3:
             currency = st.text_input("Currency", value=header.get("currency") or "USD")
 
@@ -141,10 +150,14 @@ with col_right:
         with r3_c2:
             tax_in = st.text_input("Tax Amount", value=str(header.get("tax_amount") or "0.00"))
         with r3_c3:
-            total_in = st.text_input("Total Amount", value=str(header.get("total_amount") or "0.00"))
+            total_in = st.text_input(
+                "Total Amount", value=str(header.get("total_amount") or "0.00")
+            )
 
         st.markdown("##### Line Items")
-        st.caption("Review extracted line items. You can edit line descriptions, quantities, and prices below:")
+        st.caption(
+            "Review extracted line items. You can edit line descriptions, quantities, and prices below:"
+        )
 
         # Prepare line items for editor
         table_rows = []
@@ -159,7 +172,14 @@ with col_right:
             )
 
         if not table_rows:
-            table_rows = [{"Description": "Item 1", "Quantity": 1.0, "Unit Price": float(header.get("total_amount") or 0.0), "Line Total": float(header.get("total_amount") or 0.0)}]
+            table_rows = [
+                {
+                    "Description": "Item 1",
+                    "Quantity": 1.0,
+                    "Unit Price": float(header.get("total_amount") or 0.0),
+                    "Line Total": float(header.get("total_amount") or 0.0),
+                }
+            ]
 
         edited_df = st.data_editor(
             pd.DataFrame(table_rows),
@@ -176,7 +196,7 @@ with col_right:
             for _, row in edited_df.iterrows():
                 q = Decimal(str(row.get("Quantity", 0)))
                 p = Decimal(str(row.get("Unit Price", 0)))
-                calc_line_sum += (q * p)
+                calc_line_sum += q * p
         except Exception:
             pass
 
@@ -189,7 +209,7 @@ with col_right:
             is_math_balanced = diff < Decimal("0.01")
         except Exception:
             is_math_balanced = False
-            dec_sub, dec_tax, dec_tot, expected_tot = Decimal("0"), Decimal("0"), Decimal("0"), Decimal("0")
+            dec_sub, dec_tax, dec_tot, expected_tot = Decimal(0), Decimal(0), Decimal(0), Decimal(0)
 
         if is_math_balanced:
             st.success(
@@ -206,7 +226,9 @@ with col_right:
             )
 
         st.markdown("---")
-        submitted = st.form_submit_button("✅ Approve & Mark Completed", type="primary", use_container_width=True)
+        submitted = st.form_submit_button(
+            "✅ Approve & Mark Completed", type="primary", use_container_width=True
+        )
 
         if submitted:
             try:
@@ -229,4 +251,3 @@ with col_right:
                 st.rerun()
             except Exception as ex:
                 st.error(f"Failed to update invoice: {ex}")
-

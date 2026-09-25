@@ -63,10 +63,10 @@ def generate_invoice_pdf(
 
     # Palette
     primary_color = colors.HexColor("#1e293b")  # slate-800
-    brand_accent = colors.HexColor("#2563eb")   # blue-600
-    text_muted = colors.HexColor("#64748b")     # slate-500
-    border_color = colors.HexColor("#e2e8f0")   # slate-200
-    bg_subtle = colors.HexColor("#f8fafc")      # slate-50
+    brand_accent = colors.HexColor("#2563eb")  # blue-600
+    text_muted = colors.HexColor("#64748b")  # slate-500
+    border_color = colors.HexColor("#e2e8f0")  # slate-200
+    bg_subtle = colors.HexColor("#f8fafc")  # slate-50
 
     # Custom styles
     normal_style = ParagraphStyle(
@@ -131,16 +131,20 @@ def generate_invoice_pdf(
     header_table_data = [
         [
             Paragraph(company_info_text, normal_style),
-            Paragraph(invoice_meta_text, ParagraphStyle("RightMeta", parent=normal_style, alignment=2)),
+            Paragraph(
+                invoice_meta_text, ParagraphStyle("RightMeta", parent=normal_style, alignment=2)
+            ),
         ]
     ]
     header_table = Table(header_table_data, colWidths=[90 * mm, 90 * mm])
     header_table.setStyle(
-        TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ("TOPPADDING", (0, 0), (-1, -1), 0),
-        ])
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
     )
     story.append(header_table)
     story.append(Spacer(1, 15 * mm))
@@ -175,15 +179,17 @@ def generate_invoice_pdf(
     ]
     info_table = Table(info_table_data, colWidths=[100 * mm, 80 * mm])
     info_table.setStyle(
-        TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("BACKGROUND", (0, 0), (-1, -1), bg_subtle),
-            ("BOX", (0, 0), (-1, -1), 0.5, border_color),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ])
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("BACKGROUND", (0, 0), (-1, -1), bg_subtle),
+                ("BOX", (0, 0), (-1, -1), 0.5, border_color),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
     )
     story.append(info_table)
     story.append(Spacer(1, 10 * mm))
@@ -214,24 +220,37 @@ def generate_invoice_pdf(
             unit_price = getattr(item, "unit_price", 0)
             total = getattr(item, "total_amount", 0)
 
-        table_rows.append([
-            Paragraph(str(num), normal_style),
-            Paragraph(str(desc), normal_style),
-            Paragraph(f"{Decimal(str(qty)):.2f}", ParagraphStyle("RNorm", parent=normal_style, alignment=2)),
-            Paragraph(f"{Decimal(str(unit_price)):,.2f} {currency}", ParagraphStyle("RNorm", parent=normal_style, alignment=2)),
-            Paragraph(f"{Decimal(str(total)):,.2f} {currency}", ParagraphStyle("RNorm", parent=normal_style, alignment=2)),
-        ])
+        table_rows.append(
+            [
+                Paragraph(str(num), normal_style),
+                Paragraph(str(desc), normal_style),
+                Paragraph(
+                    f"{Decimal(str(qty)):.2f}",
+                    ParagraphStyle("RNorm", parent=normal_style, alignment=2),
+                ),
+                Paragraph(
+                    f"{Decimal(str(unit_price)):,.2f} {currency}",
+                    ParagraphStyle("RNorm", parent=normal_style, alignment=2),
+                ),
+                Paragraph(
+                    f"{Decimal(str(total)):,.2f} {currency}",
+                    ParagraphStyle("RNorm", parent=normal_style, alignment=2),
+                ),
+            ]
+        )
 
     items_table = Table(table_rows, colWidths=[12 * mm, 88 * mm, 22 * mm, 30 * mm, 28 * mm])
     items_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), bg_subtle),
-            ("LINEBELOW", (0, 0), (-1, 0), 1.5, brand_accent),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-            ("TOPPADDING", (0, 0), (-1, -1), 6),
-            ("LINEBELOW", (0, 1), (-1, -1), 0.5, border_color),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ])
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), bg_subtle),
+                ("LINEBELOW", (0, 0), (-1, 0), 1.5, brand_accent),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("LINEBELOW", (0, 1), (-1, -1), 0.5, border_color),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ]
+        )
     )
     story.append(items_table)
     story.append(Spacer(1, 8 * mm))
@@ -244,38 +263,65 @@ def generate_invoice_pdf(
 
     totals_data = [
         [
-            Paragraph("<b>Subtotal:</b>", ParagraphStyle("TotLabel", parent=normal_style, alignment=2)),
-            Paragraph(f"{subtotal:,.2f} {currency}", ParagraphStyle("TotVal", parent=normal_style, alignment=2)),
+            Paragraph(
+                "<b>Subtotal:</b>", ParagraphStyle("TotLabel", parent=normal_style, alignment=2)
+            ),
+            Paragraph(
+                f"{subtotal:,.2f} {currency}",
+                ParagraphStyle("TotVal", parent=normal_style, alignment=2),
+            ),
         ],
         [
-            Paragraph(f"<b>Tax ({tax_rate * 100:.1f}%):</b>", ParagraphStyle("TotLabel", parent=normal_style, alignment=2)),
-            Paragraph(f"{tax_amount:,.2f} {currency}", ParagraphStyle("TotVal", parent=normal_style, alignment=2)),
+            Paragraph(
+                f"<b>Tax ({tax_rate * 100:.1f}%):</b>",
+                ParagraphStyle("TotLabel", parent=normal_style, alignment=2),
+            ),
+            Paragraph(
+                f"{tax_amount:,.2f} {currency}",
+                ParagraphStyle("TotVal", parent=normal_style, alignment=2),
+            ),
         ],
         [
-            Paragraph("<b>TOTAL DUE:</b>", ParagraphStyle("TotDueLabel", parent=bold_style, alignment=2, textColor=brand_accent)),
-            Paragraph(f"<b>{total_amount:,.2f} {currency}</b>", ParagraphStyle("TotDueVal", parent=bold_style, alignment=2, textColor=brand_accent)),
+            Paragraph(
+                "<b>TOTAL DUE:</b>",
+                ParagraphStyle(
+                    "TotDueLabel", parent=bold_style, alignment=2, textColor=brand_accent
+                ),
+            ),
+            Paragraph(
+                f"<b>{total_amount:,.2f} {currency}</b>",
+                ParagraphStyle("TotDueVal", parent=bold_style, alignment=2, textColor=brand_accent),
+            ),
         ],
     ]
     totals_table = Table(totals_data, colWidths=[40 * mm, 35 * mm])
     totals_table.setStyle(
-        TableStyle([
-            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ("LINEBELOW", (0, 1), (-1, 1), 0.5, border_color),
-            ("LINEBELOW", (0, 2), (-1, 2), 1.5, brand_accent),
-        ])
+        TableStyle(
+            [
+                ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LINEBELOW", (0, 1), (-1, 1), 0.5, border_color),
+                ("LINEBELOW", (0, 2), (-1, 2), 1.5, brand_accent),
+            ]
+        )
     )
 
     # Place notes on left, totals on right
     notes = invoice_data.get("notes", "") or ""
-    notes_paragraph = Paragraph(f"<b>Notes:</b><br/>{notes}", muted_style) if notes else Paragraph("", normal_style)
+    notes_paragraph = (
+        Paragraph(f"<b>Notes:</b><br/>{notes}", muted_style)
+        if notes
+        else Paragraph("", normal_style)
+    )
 
     bottom_block = Table([[notes_paragraph, totals_table]], colWidths=[105 * mm, 75 * mm])
     bottom_block.setStyle(
-        TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ])
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]
+        )
     )
     story.append(bottom_block)
 
@@ -284,4 +330,3 @@ def generate_invoice_pdf(
     pdf_bytes = buffer.getvalue()
     buffer.close()
     return pdf_bytes
-

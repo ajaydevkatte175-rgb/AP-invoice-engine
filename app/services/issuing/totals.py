@@ -151,4 +151,3 @@ def compute_totals(
         total_amount=total_amount,
         line_items=computed_items,
     )
-

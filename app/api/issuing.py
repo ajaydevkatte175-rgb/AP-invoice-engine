@@ -41,7 +41,9 @@ class DraftFromTextRequest(BaseModel):
         ...,
         min_length=3,
         description="Natural language description of the invoice to draft",
-        examples=["Bill Acme Corp for 5 hours of consulting at $150/hr and 1 server setup for $500"],
+        examples=[
+            "Bill Acme Corp for 5 hours of consulting at $150/hr and 1 server setup for $500"
+        ],
     )
 
 
@@ -373,4 +375,3 @@ async def get_invoice_pdf(
             "Content-Disposition": f'inline; filename="{inv.invoice_number}.pdf"',
         },
     )
-

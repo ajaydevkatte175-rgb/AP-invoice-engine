@@ -180,8 +180,7 @@ def validate_and_sanitize_sql(
             continue
 
         local_tables = [
-            t for t in from_node.find_all(exp.Table)
-            if t.name.lower() not in cte_aliases
+            t for t in from_node.find_all(exp.Table) if t.name.lower() not in cte_aliases
         ]
         if not local_tables:
             continue
@@ -197,7 +196,10 @@ def validate_and_sanitize_sql(
                     parent = col.parent
                     if isinstance(parent, exp.EQ):
                         other_side = parent.expression if parent.this == col else parent.this
-                        if isinstance(other_side, exp.Literal) and str(other_side.this) != tenant_uuid_str:
+                        if (
+                            isinstance(other_side, exp.Literal)
+                            and str(other_side.this) != tenant_uuid_str
+                        ):
                             raise TenantSecurityError(
                                 f"Cross-tenant access attempted: filter {other_side.this} does not match authorized tenant {tenant_uuid_str}."
                             )
@@ -272,10 +274,7 @@ async def execute_guarded_query(
         await session.execute(text(f"SET LOCAL app.current_tenant = '{tenant_uuid_str}'"))
         result = await session.execute(text(sanitized_sql))
         raw_rows = result.mappings().all()
-        rows = [
-            {k: _serialize_row_value(v) for k, v in dict(row).items()}
-            for row in raw_rows
-        ]
+        rows = [{k: _serialize_row_value(v) for k, v in dict(row).items()} for row in raw_rows]
         return sanitized_sql, rows
 
     async with AsyncSessionLocalRO() as ro_session:
@@ -283,8 +282,5 @@ async def execute_guarded_query(
         await ro_session.execute(text(f"SET LOCAL app.current_tenant = '{tenant_uuid_str}'"))
         result = await ro_session.execute(text(sanitized_sql))
         raw_rows = result.mappings().all()
-        rows = [
-            {k: _serialize_row_value(v) for k, v in dict(row).items()}
-            for row in raw_rows
-        ]
+        rows = [{k: _serialize_row_value(v) for k, v in dict(row).items()} for row in raw_rows]
         return sanitized_sql, rows

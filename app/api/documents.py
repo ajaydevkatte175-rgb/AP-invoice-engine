@@ -188,7 +188,9 @@ async def get_latest_document(
             "tax_amount": str(invoice.tax_amount) if invoice.tax_amount is not None else None,
             "total_amount": str(invoice.total_amount),
             "status": invoice.status,
-            "confidence_score": float(invoice.extraction_confidence) if invoice.extraction_confidence is not None else None,
+            "confidence_score": float(invoice.extraction_confidence)
+            if invoice.extraction_confidence is not None
+            else None,
         },
         "line_items": [
             {
@@ -277,5 +279,3 @@ async def get_document_file(
         media_type=document.mime_type or "application/octet-stream",
         headers={"Content-Disposition": f'inline; filename="{document.filename}"'},
     )
-
-

@@ -57,7 +57,7 @@ def preprocess_document(
             # First 3 pages (0, 1, 2) and last 2 pages (total - 2, total - 1)
             first_pages = list(range(min(HEAD_PAGES, total_pages)))
             last_pages = list(range(max(0, total_pages - TAIL_PAGES), total_pages))
-            pages_to_process = sorted(list(set(first_pages + last_pages)))
+            pages_to_process = sorted(set(first_pages + last_pages))
             truncated = True
             logger.info(
                 "Enforcing 5-page processing limit budget guard",
@@ -93,4 +93,3 @@ def preprocess_document(
         file_path=file_str,
         mime_type=mime_type,
     )
-

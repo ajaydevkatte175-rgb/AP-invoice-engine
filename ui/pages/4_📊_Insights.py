@@ -2,21 +2,29 @@
 
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
 from ui.lib.api_client import APIClient
 from ui.lib.formatters import format_currency
 
-st.set_page_config(page_title="Financial Insights | AP Invoice Engine", page_icon="📊", layout="wide")
+st.set_page_config(
+    page_title="Financial Insights | AP Invoice Engine", page_icon="📊", layout="wide"
+)
 
 st.title("📊 Financial Insights & Analytics")
-st.markdown("Real-time accounts payable intelligence: spend concentration, historical trends, unit price drift, duplicate risks, and payment aging.")
+st.markdown(
+    "Real-time accounts payable intelligence: spend concentration, historical trends, unit price drift, duplicate risks, and payment aging."
+)
 
 client = APIClient()
 
 tab_spend, tab_drift, tab_duplicates, tab_aging = st.tabs(
-    ["💰 Spend Analytics", "📈 Unit Price Drift", "⚠️ Duplicate Risks", "⏳ Payment Aging & Vendor Quality"]
+    [
+        "💰 Spend Analytics",
+        "📈 Unit Price Drift",
+        "⚠️ Duplicate Risks",
+        "⏳ Payment Aging & Vendor Quality",
+    ]
 )
 
 # -----------------------------------------------------------------------------
@@ -30,7 +38,9 @@ with tab_spend:
             df_vendors = pd.DataFrame(vendors_data)
             # Numeric conversion
             df_vendors["total_spend"] = pd.to_numeric(df_vendors["total_spend"], errors="coerce")
-            df_vendors["invoice_count"] = pd.to_numeric(df_vendors["invoice_count"], errors="coerce")
+            df_vendors["invoice_count"] = pd.to_numeric(
+                df_vendors["invoice_count"], errors="coerce"
+            )
 
             c_chart1, c_chart2 = st.columns([3, 2])
             with c_chart1:
@@ -40,7 +50,11 @@ with tab_spend:
                     y="total_spend",
                     color="currency",
                     title="Total Spend by Supplier & Currency",
-                    labels={"vendor_name": "Supplier", "total_spend": "Total Spend", "currency": "Currency"},
+                    labels={
+                        "vendor_name": "Supplier",
+                        "total_spend": "Total Spend",
+                        "currency": "Currency",
+                    },
                     text_auto=".2s",
                 )
                 fig_spend.update_layout(xaxis_tickangle=-45, template="plotly_white")
@@ -90,7 +104,9 @@ with tab_spend:
 # -----------------------------------------------------------------------------
 with tab_drift:
     st.subheader("Item Unit Price Drift (3+ Invoices)")
-    st.caption("Surfaces supplier price inflation or discrepancies where identical item descriptions were billed at varying unit prices over time.")
+    st.caption(
+        "Surfaces supplier price inflation or discrepancies where identical item descriptions were billed at varying unit prices over time."
+    )
 
     try:
         drift_data = client.get_insights_price_drift(min_invoices=3).get("price_drift", [])
@@ -107,7 +123,11 @@ with tab_drift:
                 y=["min_unit_price", "avg_unit_price", "max_unit_price"],
                 barmode="group",
                 title="Unit Price Spread (Min vs Avg vs Max)",
-                labels={"value": "Unit Price", "variable": "Metric", "description": "Item Description"},
+                labels={
+                    "value": "Unit Price",
+                    "variable": "Metric",
+                    "description": "Item Description",
+                },
             )
             fig_drift.update_layout(xaxis_tickangle=-30, template="plotly_white")
             st.plotly_chart(fig_drift, use_container_width=True)
@@ -123,19 +143,26 @@ with tab_drift:
 # -----------------------------------------------------------------------------
 with tab_duplicates:
     st.subheader("Potential Duplicate Invoice Risks")
-    st.caption("Catch logical duplicates sharing identical (Vendor Name, Invoice Number) or identical SHA-256 file hashes.")
+    st.caption(
+        "Catch logical duplicates sharing identical (Vendor Name, Invoice Number) or identical SHA-256 file hashes."
+    )
 
     try:
         dup_data = client.get_insights_duplicates().get("duplicates", [])
         if dup_data:
-            st.warning(f"⚠️ Found {len(dup_data)} potential duplicate invoice clusters requiring attention!")
+            st.warning(
+                f"⚠️ Found {len(dup_data)} potential duplicate invoice clusters requiring attention!"
+            )
             for cluster in dup_data:
                 vendor = cluster.get("vendor_name", "Unknown")
                 inv_num = cluster.get("invoice_number", "Unknown")
                 count = cluster.get("duplicate_count", 2)
                 tot = format_currency(cluster.get("total_amount"))
 
-                with st.expander(f"⚠️ {vendor} - Invoice #{inv_num} ({count} duplicate entries, {tot})", expanded=True):
+                with st.expander(
+                    f"⚠️ {vendor} - Invoice #{inv_num} ({count} duplicate entries, {tot})",
+                    expanded=True,
+                ):
                     st.write(f"**Duplicate Count:** {count}")
                     st.write(f"**Invoice Number:** {inv_num}")
                     st.write(f"**Vendor:** {vendor}")
@@ -167,7 +194,10 @@ with tab_aging:
                     y="total_amount",
                     color="aging_bucket",
                     title="Overdue AP Invoices by Aging Bucket",
-                    labels={"aging_bucket": "Aging Bracket", "total_amount": "Total Overdue Amount"},
+                    labels={
+                        "aging_bucket": "Aging Bracket",
+                        "total_amount": "Total Overdue Amount",
+                    },
                 )
                 fig_aging.update_layout(template="plotly_white")
                 st.plotly_chart(fig_aging, use_container_width=True)
@@ -199,4 +229,3 @@ with tab_aging:
                 st.info("No vendor quality error rate data available.")
         except Exception as e:
             st.error(f"Error loading vendor quality: {e}")
-

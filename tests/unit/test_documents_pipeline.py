@@ -297,4 +297,3 @@ async def test_get_latest_document_endpoint():
         assert "vendor_name" in data["invoice"]
         assert "total_amount" in data["invoice"]
         assert len(data["line_items"]) > 0
-

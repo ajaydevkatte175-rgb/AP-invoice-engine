@@ -43,14 +43,18 @@ with q_cols[2]:
         suggested_q = "Show me items with unit price drift across multiple invoices."
 with q_cols[3]:
     if st.button("🎯 Average extraction accuracy?", use_container_width=True):
-        suggested_q = "What is our average extraction confidence score across all processed documents?"
+        suggested_q = (
+            "What is our average extraction confidence score across all processed documents?"
+        )
 
 # Display conversation messages
 for msg in st.session_state.chat_messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
         if msg.get("sql"):
-            with st.expander("🔍 SQL Query Inspection (Validated by sqlglot & RLS)", expanded=False):
+            with st.expander(
+                "🔍 SQL Query Inspection (Validated by sqlglot & RLS)", expanded=False
+            ):
                 st.code(msg["sql"], language="sql")
                 rows = msg.get("rows")
                 if rows:
@@ -72,7 +76,9 @@ if prompt_to_send:
 
     # Call AI agent
     with st.chat_message("assistant"):
-        with st.spinner("Analyzing question, generating guarded SQL, and executing under Postgres RLS..."):
+        with st.spinner(
+            "Analyzing question, generating guarded SQL, and executing under Postgres RLS..."
+        ):
             try:
                 res = client.ask_ai(prompt_to_send)
                 answer = res.get("answer") or "Here is the result of your query."
@@ -82,7 +88,9 @@ if prompt_to_send:
                 st.markdown(answer)
 
                 if sql:
-                    with st.expander("🔍 SQL Query Inspection (Validated by sqlglot & RLS)", expanded=True):
+                    with st.expander(
+                        "🔍 SQL Query Inspection (Validated by sqlglot & RLS)", expanded=True
+                    ):
                         st.code(sql, language="sql")
                         if rows:
                             st.caption(f"Returned {len(rows)} row(s):")
@@ -99,4 +107,3 @@ if prompt_to_send:
                 st.session_state.chat_messages.append(
                     {"role": "assistant", "content": err_msg, "sql": None, "rows": None}
                 )
-

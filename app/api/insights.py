@@ -141,10 +141,7 @@ async def get_insights_vendors(
     res = await db.execute(stmt, {"tenant_id": tenant_id})
     rows = res.mappings().all()
 
-    items = [
-        {k: _serialize_row_val(v) for k, v in dict(row).items()}
-        for row in rows
-    ]
+    items = [{k: _serialize_row_val(v) for k, v in dict(row).items()} for row in rows]
     return {
         "items": items,
         "total": len(items),
@@ -179,10 +176,7 @@ async def get_insights_trend(
     res = await db.execute(stmt, {"tenant_id": tenant_id})
     rows = res.mappings().all()
 
-    items = [
-        {k: _serialize_row_val(v) for k, v in dict(row).items()}
-        for row in rows
-    ]
+    items = [{k: _serialize_row_val(v) for k, v in dict(row).items()} for row in rows]
     return {
         "items": items,
         "total": len(items),
@@ -194,7 +188,9 @@ async def get_insights_trend(
     summary="Unit price drift tracking across 3+ invoices",
 )
 async def get_insights_price_drift(
-    min_invoices: int = Query(default=3, ge=1, description="Minimum number of invoices required to compute price drift"),
+    min_invoices: int = Query(
+        default=3, ge=1, description="Minimum number of invoices required to compute price drift"
+    ),
     _api_key: str = Depends(verify_api_key),
     tenant_id: uuid.UUID = Depends(tenant_dependency),
     db: AsyncSession = Depends(get_db),
@@ -229,10 +225,7 @@ async def get_insights_price_drift(
     res = await db.execute(stmt, {"tenant_id": tenant_id, "min_invoices": min_invoices})
     rows = res.mappings().all()
 
-    items = [
-        {k: _serialize_row_val(v) for k, v in dict(row).items()}
-        for row in rows
-    ]
+    items = [{k: _serialize_row_val(v) for k, v in dict(row).items()} for row in rows]
     return {
         "items": items,
         "min_invoices_threshold": min_invoices,
@@ -297,12 +290,10 @@ async def get_insights_duplicates(
     flag_rows = flag_res.mappings().all()
 
     exact_duplicates = [
-        {k: _serialize_row_val(v) for k, v in dict(row).items()}
-        for row in exact_rows
+        {k: _serialize_row_val(v) for k, v in dict(row).items()} for row in exact_rows
     ]
     flagged_duplicates = [
-        {k: _serialize_row_val(v) for k, v in dict(row).items()}
-        for row in flag_rows
+        {k: _serialize_row_val(v) for k, v in dict(row).items()} for row in flag_rows
     ]
 
     return {
@@ -360,10 +351,7 @@ async def get_insights_aging(
     res = await db.execute(stmt, {"tenant_id": tenant_id})
     rows = res.mappings().all()
 
-    buckets = [
-        {k: _serialize_row_val(v) for k, v in dict(row).items()}
-        for row in rows
-    ]
+    buckets = [{k: _serialize_row_val(v) for k, v in dict(row).items()} for row in rows]
     return {
         "buckets": buckets,
         "as_of_date": date.today().isoformat(),
@@ -406,12 +394,8 @@ async def get_insights_vendor_quality(
     res = await db.execute(stmt, {"tenant_id": tenant_id})
     rows = res.mappings().all()
 
-    items = [
-        {k: _serialize_row_val(v) for k, v in dict(row).items()}
-        for row in rows
-    ]
+    items = [{k: _serialize_row_val(v) for k, v in dict(row).items()} for row in rows]
     return {
         "items": items,
         "total": len(items),
     }
-

@@ -2,6 +2,7 @@
 
 from datetime import date, timedelta
 from decimal import Decimal
+
 import pandas as pd
 import streamlit as st
 
@@ -9,7 +10,9 @@ from app.services.issuing.totals import compute_totals
 from ui.lib.api_client import APIClient
 from ui.lib.formatters import format_currency
 
-st.set_page_config(page_title="Create Outbound Invoice | AP Invoice Engine", page_icon="🧾", layout="wide")
+st.set_page_config(
+    page_title="Create Outbound Invoice | AP Invoice Engine", page_icon="🧾", layout="wide"
+)
 
 st.title("🧾 Create Outbound Invoice (AR)")
 st.markdown(
@@ -22,8 +25,18 @@ client = APIClient()
 # Initialize session state for draft fields if not present
 if "draft_items" not in st.session_state:
     st.session_state.draft_items = [
-        {"description": "Consulting Services", "quantity": 10.0, "unit_price": 150.00, "tax_rate": 0.10},
-        {"description": "Infrastructure Setup", "quantity": 1.0, "unit_price": 500.00, "tax_rate": 0.10},
+        {
+            "description": "Consulting Services",
+            "quantity": 10.0,
+            "unit_price": 150.00,
+            "tax_rate": 0.10,
+        },
+        {
+            "description": "Infrastructure Setup",
+            "quantity": 1.0,
+            "unit_price": 500.00,
+            "tax_rate": 0.10,
+        },
     ]
 if "draft_customer" not in st.session_state:
     st.session_state.draft_customer = ""
@@ -34,7 +47,9 @@ if "draft_notes" not in st.session_state:
 # 1. Natural Language AI Draft Box
 # -----------------------------------------------------------------------------
 with st.expander("✨ Draft with AI (Natural Language Prompt)", expanded=True):
-    st.caption("Describe the invoice naturally and let AI parse the line items and terms. LLM totals are discarded and recomputed in Python.")
+    st.caption(
+        "Describe the invoice naturally and let AI parse the line items and terms. LLM totals are discarded and recomputed in Python."
+    )
     ai_prompt = st.text_area(
         "Describe invoice details:",
         placeholder="e.g. Bill Acme Corp $2,500 for 25 hours of full-stack engineering and $350 for cloud hosting, 10% tax, due in 30 days",
@@ -89,7 +104,9 @@ with col_cust:
         selected_customer_id = customer_options[selected_cust_name]
     else:
         st.warning("No customers found in database. Create one below:")
-        new_c_name = st.text_input("New Customer Name", value=st.session_state.draft_customer or "Acme Corporation")
+        new_c_name = st.text_input(
+            "New Customer Name", value=st.session_state.draft_customer or "Acme Corporation"
+        )
         new_c_email = st.text_input("New Customer Email", value="billing@example.com")
         if st.button("Save New Customer"):
             try:
@@ -104,7 +121,9 @@ with col_curr:
     currency = st.selectbox("Currency", ["USD", "EUR", "GBP", "CAD", "AUD"])
 
 with col_tax:
-    default_tax_rate = st.number_input("Default Tax Rate (e.g. 0.10 for 10%)", min_value=0.0, max_value=1.0, value=0.10, step=0.01)
+    default_tax_rate = st.number_input(
+        "Default Tax Rate (e.g. 0.10 for 10%)", min_value=0.0, max_value=1.0, value=0.10, step=0.01
+    )
 
 col_d1, col_d2 = st.columns(2)
 with col_d1:
@@ -115,7 +134,9 @@ with col_d2:
 notes = st.text_area("Notes & Payment Instructions", value=st.session_state.draft_notes, height=68)
 
 st.markdown("### 📦 Line Items")
-st.caption("Add, edit, or remove line items. Quantities are handled with 4 decimal places, prices with commercial half-up rounding.")
+st.caption(
+    "Add, edit, or remove line items. Quantities are handled with 4 decimal places, prices with commercial half-up rounding."
+)
 
 df_editor = st.data_editor(
     pd.DataFrame(st.session_state.draft_items),
@@ -123,9 +144,15 @@ df_editor = st.data_editor(
     use_container_width=True,
     column_config={
         "description": st.column_config.TextColumn("Description", required=True),
-        "quantity": st.column_config.NumberColumn("Quantity", min_value=0.0001, step=1.0, format="%.4f"),
-        "unit_price": st.column_config.NumberColumn("Unit Price", min_value=0.0, step=10.0, format="%.2f"),
-        "tax_rate": st.column_config.NumberColumn("Tax Rate", min_value=0.0, max_value=1.0, step=0.01, format="%.2f"),
+        "quantity": st.column_config.NumberColumn(
+            "Quantity", min_value=0.0001, step=1.0, format="%.4f"
+        ),
+        "unit_price": st.column_config.NumberColumn(
+            "Unit Price", min_value=0.0, step=10.0, format="%.2f"
+        ),
+        "tax_rate": st.column_config.NumberColumn(
+            "Tax Rate", min_value=0.0, max_value=1.0, step=0.01, format="%.2f"
+        ),
     },
     key="items_editor",
 )
@@ -143,8 +170,14 @@ for _, row in df_editor.iterrows():
     try:
         qty = Decimal(str(row.get("quantity", 1)))
         price = Decimal(str(row.get("unit_price", 0)))
-        tr = Decimal(str(row.get("tax_rate", default_tax_rate))) if row.get("tax_rate") is not None else Decimal(str(default_tax_rate))
-        calc_items.append({"description": desc, "quantity": qty, "unit_price": price, "tax_rate": tr})
+        tr = (
+            Decimal(str(row.get("tax_rate", default_tax_rate)))
+            if row.get("tax_rate") is not None
+            else Decimal(str(default_tax_rate))
+        )
+        calc_items.append(
+            {"description": desc, "quantity": qty, "unit_price": price, "tax_rate": tr}
+        )
     except Exception:
         pass
 
@@ -166,7 +199,9 @@ st.markdown("---")
 col_issue, col_preview = st.columns([1, 2])
 
 with col_issue:
-    issue_btn = st.button("📤 Issue Invoice (Assign Gapless Number)", type="primary", use_container_width=True)
+    issue_btn = st.button(
+        "📤 Issue Invoice (Assign Gapless Number)", type="primary", use_container_width=True
+    )
 
 if issue_btn:
     if not calc_items:
@@ -218,4 +253,3 @@ if "last_issued_id" in st.session_state:
         )
     except Exception as ex:
         st.warning(f"Could not load PDF: {ex}")
-

@@ -101,4 +101,3 @@ async def ask_chat(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process financial query: {exc}",
         )
-

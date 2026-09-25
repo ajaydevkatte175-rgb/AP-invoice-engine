@@ -23,4 +23,3 @@ __all__ = [
     "to_decimal_qty",
     "to_decimal_rate",
 ]
-

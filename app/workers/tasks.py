@@ -136,19 +136,22 @@ async def process_document_pipeline(
     # If document was truncated due to budget guard, record an INFO flag
     if preprocessed.truncated:
         from app.services.validate import ValidationFlagData
+
         val_result.flags.append(
             ValidationFlagData(
                 flag_type="PAGE_BUDGET_GUARD_TRUNCATED",
                 severity="INFO",
                 field_name="pages",
                 message=f"Document exceeded 5 pages ({preprocessed.page_count} total). Processed pages {preprocessed.pages_processed}.",
-                details={"total_pages": preprocessed.page_count, "processed": preprocessed.pages_processed},
+                details={
+                    "total_pages": preprocessed.page_count,
+                    "processed": preprocessed.pages_processed,
+                },
             )
         )
 
     # STEP 5: Logical Duplicate Check (NON-NEGOTIABLE RULE 12)
     is_logical_duplicate = False
-    existing_duplicate_id: uuid.UUID | None = None
 
     async with AsyncSessionLocal() as session:
         await session.execute(text(f"SET LOCAL app.current_tenant = '{tenant_uuid}'"))
@@ -163,7 +166,6 @@ async def process_document_pipeline(
 
         if existing_dup:
             is_logical_duplicate = True
-            existing_duplicate_id = existing_dup.id
             logger.warning(
                 "Logical duplicate detected via (vendor_name, invoice_number)",
                 vendor_name=extracted.vendor_name,
@@ -172,6 +174,7 @@ async def process_document_pipeline(
             )
 
             from app.services.validate import ValidationFlagData
+
             val_result.flags.append(
                 ValidationFlagData(
                     flag_type="DUPLICATE_INVOICE",
@@ -327,4 +330,3 @@ async def process_document_pipeline(
             "correlation_id": corr_id,
             "flags": [f.model_dump() for f in val_result.flags],
         }
-

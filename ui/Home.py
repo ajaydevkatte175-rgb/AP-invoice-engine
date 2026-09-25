@@ -18,7 +18,9 @@ client = APIClient()
 col_header, col_status = st.columns([3, 1])
 with col_header:
     st.title("🧾 AP Invoice Engine")
-    st.caption("Autonomous Accounts Payable Extraction, Deterministic Validation & Outbound Invoicing")
+    st.caption(
+        "Autonomous Accounts Payable Extraction, Deterministic Validation & Outbound Invoicing"
+    )
 
 with col_status:
     health = client.check_health()
@@ -158,4 +160,3 @@ with c3:
 
 st.markdown("---")
 st.caption("AP Invoice Engine v0.1.0 • Built with FastAPI, PostgreSQL RLS, ARQ, and Streamlit")
-

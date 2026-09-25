@@ -227,11 +227,25 @@ def generate_single_invoice_pdf(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate synthetic evaluation invoices in PDF format with ground truth JSON")
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic evaluation invoices in PDF format with ground truth JSON"
+    )
     parser.add_argument("--count", type=int, default=10, help="Number of invoices to generate")
-    parser.add_argument("--output-dir", type=str, default="data/eval/pdfs", help="Directory to save PDFs")
-    parser.add_argument("--gt-dir", type=str, default="data/eval/ground_truth", help="Directory to save ground truth JSON")
-    parser.add_argument("--error-rate", type=float, default=0.15, help="Fraction of invoices with injected math errors (default ~15%)")
+    parser.add_argument(
+        "--output-dir", type=str, default="data/eval/pdfs", help="Directory to save PDFs"
+    )
+    parser.add_argument(
+        "--gt-dir",
+        type=str,
+        default="data/eval/ground_truth",
+        help="Directory to save ground truth JSON",
+    )
+    parser.add_argument(
+        "--error-rate",
+        type=float,
+        default=0.15,
+        help="Fraction of invoices with injected math errors (default ~15%)",
+    )
     args = parser.parse_args()
 
     out_dir = Path(args.output_dir)
@@ -239,7 +253,9 @@ def main():
     gt_dir = Path(args.gt_dir)
     gt_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Generating {args.count} invoices (with ~{int(args.error_rate * 100)}% injected math errors)...")
+    print(
+        f"Generating {args.count} invoices (with ~{int(args.error_rate * 100)}% injected math errors)..."
+    )
 
     error_count = 0
     for i in range(args.count):
@@ -254,12 +270,14 @@ def main():
             error_count += 1
 
         pdf_path = out_dir / f"invoice_{i:04d}.pdf"
-        gt_data = generate_single_invoice_pdf(pdf_path, i, vendor, items_slice, inject_math_error=inject_error)
+        gt_data = generate_single_invoice_pdf(
+            pdf_path, i, vendor, items_slice, inject_math_error=inject_error
+        )
 
         gt_path = gt_dir / f"invoice_{i:04d}.json"
         gt_path.write_text(json.dumps(gt_data, indent=2))
 
-        print(f"  [{i+1}/{args.count}] Generated {pdf_path.name} (Math Error: {inject_error})")
+        print(f"  [{i + 1}/{args.count}] Generated {pdf_path.name} (Math Error: {inject_error})")
 
     print(f"Done: {args.count} invoices generated ({error_count} with injected math errors).")
 

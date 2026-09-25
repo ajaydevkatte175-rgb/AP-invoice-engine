@@ -245,8 +245,9 @@ async def test_insights_vendor_quality(seeded_insights_tenant):
         assert res.status_code == 200
         data = res.json()
         assert "items" in data
-        beta_quality = next((i for i in data["items"] if i["vendor_name"] == "Beta Logistics"), None)
+        beta_quality = next(
+            (i for i in data["items"] if i["vendor_name"] == "Beta Logistics"), None
+        )
         assert beta_quality is not None
         assert beta_quality["review_count"] >= 1
         assert float(beta_quality["error_rate_percent"]) == 100.0
-

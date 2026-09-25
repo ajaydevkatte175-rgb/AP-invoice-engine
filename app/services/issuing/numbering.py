@@ -78,4 +78,3 @@ async def next_invoice_number(
     # Format standard 5-digit zero-padded number (e.g. INV-00001)
     invoice_number = f"{prefix}{next_val:05d}"
     return invoice_number
-

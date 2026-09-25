@@ -6,14 +6,20 @@ import streamlit as st
 from ui.lib.api_client import APIClient
 from ui.lib.formatters import format_currency, render_confidence_metric, render_status_pill
 
-st.set_page_config(page_title="Invoices Directory | AP Invoice Engine", page_icon="📚", layout="wide")
+st.set_page_config(
+    page_title="Invoices Directory | AP Invoice Engine", page_icon="📚", layout="wide"
+)
 
 st.title("📚 Invoices Directory")
-st.markdown("Search, filter, and inspect full server-side historical records for Accounts Payable and Accounts Receivable.")
+st.markdown(
+    "Search, filter, and inspect full server-side historical records for Accounts Payable and Accounts Receivable."
+)
 
 client = APIClient()
 
-tab_inbound, tab_outbound = st.tabs(["📥 Inbound (AP) Invoices", "📤 Outbound (AR) Issued Invoices"])
+tab_inbound, tab_outbound = st.tabs(
+    ["📥 Inbound (AP) Invoices", "📤 Outbound (AR) Issued Invoices"]
+)
 
 # -----------------------------------------------------------------------------
 # TAB 1: Inbound (AP) Invoices
@@ -23,7 +29,11 @@ with tab_inbound:
 
     col_search, col_status = st.columns([2, 1])
     with col_search:
-        search_query = st.text_input("🔍 Search by Vendor or Invoice #", placeholder="e.g. Acme, INV-2024...", key="ap_search")
+        search_query = st.text_input(
+            "🔍 Search by Vendor or Invoice #",
+            placeholder="e.g. Acme, INV-2024...",
+            key="ap_search",
+        )
     with col_status:
         status_choice = st.selectbox(
             "Filter by Status",
@@ -73,8 +83,12 @@ with tab_inbound:
 
         st.markdown("---")
         st.subheader("🔍 Inspect Invoice Details")
-        inv_options = {f"{r['Invoice #']} - {r['Vendor']} ({r['Total']})": r["ID"] for r in table_rows}
-        selected_label = st.selectbox("Select an invoice to inspect line items and flags:", list(inv_options.keys()))
+        inv_options = {
+            f"{r['Invoice #']} - {r['Vendor']} ({r['Total']})": r["ID"] for r in table_rows
+        }
+        selected_label = st.selectbox(
+            "Select an invoice to inspect line items and flags:", list(inv_options.keys())
+        )
 
         if selected_label:
             selected_id = inv_options[selected_label]
@@ -92,9 +106,18 @@ with tab_inbound:
                     st.write("**Date:**", header.get("invoice_date"))
                     st.write("**Due Date:**", header.get("due_date"))
                 with h3:
-                    st.write("**Subtotal:**", format_currency(header.get("subtotal"), header.get("currency", "USD")))
-                    st.write("**Tax:**", format_currency(header.get("tax_amount"), header.get("currency", "USD")))
-                    st.write("**Total:**", format_currency(header.get("total_amount"), header.get("currency", "USD")))
+                    st.write(
+                        "**Subtotal:**",
+                        format_currency(header.get("subtotal"), header.get("currency", "USD")),
+                    )
+                    st.write(
+                        "**Tax:**",
+                        format_currency(header.get("tax_amount"), header.get("currency", "USD")),
+                    )
+                    st.write(
+                        "**Total:**",
+                        format_currency(header.get("total_amount"), header.get("currency", "USD")),
+                    )
                 with h4:
                     st.write("**Status:**")
                     render_status_pill(header.get("status", ""))
@@ -104,7 +127,18 @@ with tab_inbound:
                 if items:
                     st.markdown("##### Line Items")
                     items_df = pd.DataFrame(items)
-                    display_cols = [c for c in ["line_number", "description", "quantity", "unit_price", "total_amount", "confidence"] if c in items_df.columns]
+                    display_cols = [
+                        c
+                        for c in [
+                            "line_number",
+                            "description",
+                            "quantity",
+                            "unit_price",
+                            "total_amount",
+                            "confidence",
+                        ]
+                        if c in items_df.columns
+                    ]
                     st.dataframe(items_df[display_cols], use_container_width=True, hide_index=True)
 
                 if flags:
@@ -175,12 +209,16 @@ with tab_outbound:
 
         st.markdown("---")
         st.subheader("📥 Download Invoice PDF & Manage Status")
-        ar_options = {f"{r['Invoice #']} - {r['Total']} ({r['Status']})": r["ID"] for r in out_table}
+        ar_options = {
+            f"{r['Invoice #']} - {r['Total']} ({r['Status']})": r["ID"] for r in out_table
+        }
         selected_ar_label = st.selectbox("Select an issued invoice:", list(ar_options.keys()))
 
         if selected_ar_label:
             selected_ar_id = ar_options[selected_ar_label]
-            inv_obj = next((x for x in outbound_data if str(x.get("id")) == str(selected_ar_id)), None)
+            inv_obj = next(
+                (x for x in outbound_data if str(x.get("id")) == str(selected_ar_id)), None
+            )
 
             ar_c1, ar_c2, ar_c3 = st.columns([1, 1, 1])
             with ar_c1:
@@ -215,4 +253,3 @@ with tab_outbound:
                         client.update_issued_invoice_status(selected_ar_id, "cancelled")
                         st.warning("Invoice cancelled.")
                         st.rerun()
-

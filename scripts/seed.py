@@ -79,7 +79,9 @@ async def seed_data(invoice_count: int = 25) -> None:
         created_customers = []
         for name, email, addr in customer_names:
             c_res = await session.execute(
-                select(Customer).where(Customer.tenant_id == DEFAULT_TENANT_ID, Customer.name == name)
+                select(Customer).where(
+                    Customer.tenant_id == DEFAULT_TENANT_ID, Customer.name == name
+                )
             )
             cust = c_res.scalar_one_or_none()
             if not cust:
@@ -177,9 +179,11 @@ async def seed_data(invoice_count: int = 25) -> None:
 
             # Injected conditions
             # Every 6th invoice has an arithmetic error to test review queue
-            has_math_error = (i % 6 == 0)
+            has_math_error = i % 6 == 0
             # Item with price drift: Developer SaaS Monthly Seat
-            drift_price = Decimal("20.00") if i < 8 else (Decimal("25.00") if i < 16 else Decimal("32.50"))
+            drift_price = (
+                Decimal("20.00") if i < 8 else (Decimal("25.00") if i < 16 else Decimal("32.50"))
+            )
 
             # Build line items
             num_items = random.randint(1, 4)
@@ -238,7 +242,9 @@ async def seed_data(invoice_count: int = 25) -> None:
             session.add(doc)
             await session.flush()
 
-            conf_score = Decimal("0.7850") if has_math_error else Decimal(f"0.{random.randint(9200, 9950)}")
+            conf_score = (
+                Decimal("0.7850") if has_math_error else Decimal(f"0.{random.randint(9200, 9950)}")
+            )
             inv = Invoice(
                 tenant_id=DEFAULT_TENANT_ID,
                 document_id=doc.id,
@@ -345,7 +351,9 @@ async def seed_data(invoice_count: int = 25) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Seed database with invoices and customers.")
-    parser.add_argument("--invoices", type=int, default=25, help="Number of inbound invoices to seed")
+    parser.add_argument(
+        "--invoices", type=int, default=25, help="Number of inbound invoices to seed"
+    )
     args = parser.parse_args()
     asyncio.run(seed_data(invoice_count=args.invoices))
 

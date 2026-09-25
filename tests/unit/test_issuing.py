@@ -62,7 +62,9 @@ async def test_draft_from_text_endpoint():
         assert "Globex" in data["customer_name"]
         assert len(data["line_items"]) >= 1
         assert Decimal(str(data["subtotal"])) > Decimal("0.00")
-        assert Decimal(str(data["total_amount"])) == Decimal(str(data["subtotal"])) + Decimal(str(data["tax_amount"]))
+        assert Decimal(str(data["total_amount"])) == Decimal(str(data["subtotal"])) + Decimal(
+            str(data["tax_amount"])
+        )
 
 
 @pytest.mark.asyncio
@@ -178,4 +180,3 @@ async def test_create_and_manage_issued_invoice():
         assert pdf_res.headers["content-type"] == "application/pdf"
         assert pdf_res.content.startswith(b"%PDF")
         assert len(pdf_res.content) > 1000
-

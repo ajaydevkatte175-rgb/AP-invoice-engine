@@ -36,4 +36,3 @@ async def verify_api_key(
         )
 
     return provided_key
-

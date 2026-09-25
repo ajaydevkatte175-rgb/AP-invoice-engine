@@ -1,16 +1,19 @@
 """Evaluation harness producing docs/evaluation.md evaluating accuracy, F1 score, and error detection."""
 
 import argparse
+import json
+import re
 from datetime import datetime
 from decimal import Decimal
-import json
-import os
 from pathlib import Path
-import re
 from typing import Any
 
-from app.services.validate import InvoiceValidationData, LineItemValidationData, validate_invoice_data
-from scripts.generate_invoices import generate_single_invoice_pdf, CATALOG, VENDORS
+from app.services.validate import (
+    InvoiceValidationData,
+    LineItemValidationData,
+    validate_invoice_data,
+)
+from scripts.generate_invoices import CATALOG, VENDORS, generate_single_invoice_pdf
 
 
 def parse_pdf_text_fallback(pdf_path: Path, gt_data: dict[str, Any]) -> dict[str, Any]:
@@ -32,13 +35,23 @@ def parse_pdf_text_fallback(pdf_path: Path, gt_data: dict[str, Any]) -> dict[str
         date_match = re.search(r"Invoice Date:\s*([0-9\-]+)", text)
         due_match = re.search(r"Due Date:\s*([0-9\-]+)", text)
         curr_match = re.search(r"Currency:\s*([A-Z]{3})", text)
-        sub_match = re.search(r"Subtotal:\s*([0-9\.]+)\s*USD", text) or re.search(r"Subtotal:\s*\n?\s*([0-9\.]+)", text)
-        tax_match = re.search(r"Tax Amount:\s*([0-9\.]+)\s*USD", text) or re.search(r"Tax.*:\s*\n?\s*([0-9\.]+)", text)
-        tot_match = re.search(r"Total Amount:\s*([0-9\.]+)\s*USD", text) or re.search(r"\nTotal:\s*\n?\s*([0-9\.]+)", text)
+        sub_match = re.search(r"Subtotal:\s*([0-9\.]+)\s*USD", text) or re.search(
+            r"Subtotal:\s*\n?\s*([0-9\.]+)", text
+        )
+        tax_match = re.search(r"Tax Amount:\s*([0-9\.]+)\s*USD", text) or re.search(
+            r"Tax.*:\s*\n?\s*([0-9\.]+)", text
+        )
+        tot_match = re.search(r"Total Amount:\s*([0-9\.]+)\s*USD", text) or re.search(
+            r"\nTotal:\s*\n?\s*([0-9\.]+)", text
+        )
 
         extracted = {
-            "vendor_name": vendor_match.group(1).strip() if vendor_match else gt_data["vendor_name"],
-            "invoice_number": inv_num_match.group(1).strip() if inv_num_match else gt_data["invoice_number"],
+            "vendor_name": vendor_match.group(1).strip()
+            if vendor_match
+            else gt_data["vendor_name"],
+            "invoice_number": inv_num_match.group(1).strip()
+            if inv_num_match
+            else gt_data["invoice_number"],
             "invoice_date": date_match.group(1).strip() if date_match else gt_data["invoice_date"],
             "due_date": due_match.group(1).strip() if due_match else gt_data["due_date"],
             "currency": curr_match.group(1).strip() if curr_match else gt_data["currency"],
@@ -72,7 +85,7 @@ def run_evaluation(limit: int = 10, output_path: str = "docs/evaluation.md") -> 
     eval_gt_dir.mkdir(parents=True, exist_ok=True)
 
     # Ensure dataset is generated
-    gt_files = sorted(list(eval_gt_dir.glob("*.json")))
+    gt_files = sorted(eval_gt_dir.glob("*.json"))
     if len(gt_files) < limit:
         print(f"Generating synthetic test dataset (at least {limit} samples)...")
         for i in range(limit):
@@ -80,9 +93,11 @@ def run_evaluation(limit: int = 10, output_path: str = "docs/evaluation.md") -> 
             items_slice = CATALOG[i % 3 : (i % 3) + 3] or CATALOG[:3]
             inject_error = (i % 7 == 3) if limit >= 7 else (i == 1)
             pdf_p = eval_pdf_dir / f"invoice_{i:04d}.pdf"
-            gt = generate_single_invoice_pdf(pdf_p, i, vendor, items_slice, inject_math_error=inject_error)
+            gt = generate_single_invoice_pdf(
+                pdf_p, i, vendor, items_slice, inject_math_error=inject_error
+            )
             (eval_gt_dir / f"invoice_{i:04d}.json").write_text(json.dumps(gt, indent=2))
-        gt_files = sorted(list(eval_gt_dir.glob("*.json")))
+        gt_files = sorted(eval_gt_dir.glob("*.json"))
 
     sample_files = gt_files[:limit]
     print(f"Running evaluation on {len(sample_files)} samples...")
@@ -132,7 +147,9 @@ def run_evaluation(limit: int = 10, output_path: str = "docs/evaluation.md") -> 
         matched_items = 0
         for gi in gt_items:
             for ei in ext_items:
-                if ei["description"] == gi["description"] and abs(Decimal(str(ei["unit_price"])) - Decimal(str(gi["unit_price"]))) < Decimal("0.01"):
+                if ei["description"] == gi["description"] and abs(
+                    Decimal(str(ei["unit_price"])) - Decimal(str(gi["unit_price"]))
+                ) < Decimal("0.01"):
                     matched_items += 1
                     break
         correct_line_items += matched_items
@@ -162,7 +179,10 @@ def run_evaluation(limit: int = 10, output_path: str = "docs/evaluation.md") -> 
         validation_res = validate_invoice_data(inv_val)
         flag_types = [f.flag_type for f in validation_res.flags]
 
-        has_math_flag = any(f in ("TOTAL_MATH_MISMATCH", "SUBTOTAL_MISMATCH", "LINE_ITEM_MATH_MISMATCH") for f in flag_types)
+        has_math_flag = any(
+            f in ("TOTAL_MATH_MISMATCH", "SUBTOTAL_MISMATCH", "LINE_ITEM_MATH_MISMATCH")
+            for f in flag_types
+        )
 
         is_injected = gt_data.get("has_injected_math_error", False)
         if is_injected:
@@ -191,13 +211,17 @@ def run_evaluation(limit: int = 10, output_path: str = "docs/evaluation.md") -> 
     field_accuracy_pct = (total_correct_fields / total_fields) * 100 if total_fields else 0.0
 
     # Line item F1
-    precision = correct_line_items / total_extracted_line_items if total_extracted_line_items else 1.0
+    precision = (
+        correct_line_items / total_extracted_line_items if total_extracted_line_items else 1.0
+    )
     recall = correct_line_items / total_gt_line_items if total_gt_line_items else 1.0
     f1_score = (2 * precision * recall) / (precision + recall) if (precision + recall) else 1.0
 
     # Injected error detection rate
     error_detection_rate = (
-        (caught_injected_errors / total_injected_errors) * 100 if total_injected_errors > 0 else 100.0
+        (caught_injected_errors / total_injected_errors) * 100
+        if total_injected_errors > 0
+        else 100.0
     )
 
     metrics = {
@@ -210,9 +234,7 @@ def run_evaluation(limit: int = 10, output_path: str = "docs/evaluation.md") -> 
         "total_injected_errors": total_injected_errors,
         "caught_injected_errors": caught_injected_errors,
         "error_detection_rate_pct": error_detection_rate,
-        "field_breakdown": {
-            k: (v / num_samples) * 100 for k, v in field_correct_counts.items()
-        },
+        "field_breakdown": {k: (v / num_samples) * 100 for k, v in field_correct_counts.items()},
     }
 
     # Generate docs/evaluation.md
@@ -221,7 +243,7 @@ def run_evaluation(limit: int = 10, output_path: str = "docs/evaluation.md") -> 
 
     report_content = f"""# AP Invoice Engine — Evaluation Report
 
-**Generated:** {metrics['timestamp']}  
+**Generated:** {metrics["timestamp"]}  
 **Evaluation Dataset Size:** {num_samples} documents  
 **Ground Truth Directory:** `data/eval/ground_truth/`  
 **Evaluation Mode:** Multimodal Extraction & Deterministic Python Validation
@@ -271,7 +293,11 @@ To guarantee that supplier errors and intentional discrepancies are never hidden
 | :--- | :--- | :---: | :--- | :---: |
 """
     for sr in sample_results:
-        flags_str = ", ".join(f"`{f}`" for f in sr["flags_raised"]) if sr["flags_raised"] else "*None (Valid)*"
+        flags_str = (
+            ", ".join(f"`{f}`" for f in sr["flags_raised"])
+            if sr["flags_raised"]
+            else "*None (Valid)*"
+        )
         outcome_str = "✅ Flagged for Review" if sr["injected_error"] else "🟢 Passed Validation"
         report_content += f"| `{sr['file']}` | {sr['vendor']} | {'⚠️ Yes' if sr['injected_error'] else 'No'} | {flags_str} | {outcome_str} |\n"
 
@@ -294,7 +320,9 @@ To guarantee that supplier errors and intentional discrepancies are never hidden
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run extraction and validation evaluation harness")
     parser.add_argument("--limit", type=int, default=10, help="Number of test samples to evaluate")
-    parser.add_argument("--output", type=str, default="docs/evaluation.md", help="Markdown output path")
+    parser.add_argument(
+        "--output", type=str, default="docs/evaluation.md", help="Markdown output path"
+    )
     args = parser.parse_args()
 
     metrics = run_evaluation(limit=args.limit, output_path=args.output)
@@ -302,7 +330,9 @@ def main() -> None:
     print(f"Samples Evaluated: {metrics['num_samples']}")
     print(f"Field Accuracy:    {metrics['field_accuracy_pct']:.1f}%")
     print(f"Line Item F1:      {metrics['line_item_f1']:.4f}")
-    print(f"Errors Caught:     {metrics['caught_injected_errors']}/{metrics['total_injected_errors']} ({metrics['error_detection_rate_pct']:.1f}%)")
+    print(
+        f"Errors Caught:     {metrics['caught_injected_errors']}/{metrics['total_injected_errors']} ({metrics['error_detection_rate_pct']:.1f}%)"
+    )
 
 
 if __name__ == "__main__":

@@ -110,7 +110,11 @@ async def test_chat_ask_session_continuity():
         chat_sess = await session.get(ChatSession, sess_uuid)
         assert chat_sess is not None
 
-        stmt = select(ChatMessage).where(ChatMessage.session_id == sess_uuid).order_by(ChatMessage.created_at)
+        stmt = (
+            select(ChatMessage)
+            .where(ChatMessage.session_id == sess_uuid)
+            .order_by(ChatMessage.created_at)
+        )
         result = await session.execute(stmt)
         messages = result.scalars().all()
         # 2 user messages + 2 assistant messages = 4 messages
@@ -163,4 +167,3 @@ async def test_query_agent_direct_ask_and_audit_log():
         assert audit_entry is not None
         assert audit_entry.actor_type == "AI_AGENT"
         assert audit_entry.resource_type == "chat_session"
-

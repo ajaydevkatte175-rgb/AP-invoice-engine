@@ -23,7 +23,9 @@ def _parse_heuristic_invoice(text: str) -> ExtractedInvoice:
     vendor_name = "Acme Supplies Ltd"
     vendor_match = re.search(r"Vendor:\s*([^\n\r]+)", text, re.IGNORECASE)
     if not vendor_match:
-        vendor_match = re.search(r"(?:From|Supplier|Billed\s*By):\s*([^\n\r]+)", text, re.IGNORECASE)
+        vendor_match = re.search(
+            r"(?:From|Supplier|Billed\s*By):\s*([^\n\r]+)", text, re.IGNORECASE
+        )
     if vendor_match:
         vendor_name = vendor_match.group(1).strip()
 
@@ -64,7 +66,9 @@ def _parse_heuristic_invoice(text: str) -> ExtractedInvoice:
         tax_amount = Decimal(tax_match.group(1))
 
     total_amount = Decimal("0.00")
-    total_match = re.search(r"Total(?:\s*Amount)?:\s*[\$€£]?\s*([0-9]+\.[0-9]{2})", text, re.IGNORECASE)
+    total_match = re.search(
+        r"Total(?:\s*Amount)?:\s*[\$€£]?\s*([0-9]+\.[0-9]{2})", text, re.IGNORECASE
+    )
     if total_match:
         total_amount = Decimal(total_match.group(1))
     elif subtotal is not None:
@@ -103,7 +107,9 @@ def _parse_heuristic_invoice(text: str) -> ExtractedInvoice:
         )
         for idx, m in enumerate(table_matches, start=1):
             desc = m.group(1).strip()
-            if any(skip in desc.lower() for skip in ["subtotal", "total", "tax", "amount", "price"]):
+            if any(
+                skip in desc.lower() for skip in ["subtotal", "total", "tax", "amount", "price"]
+            ):
                 continue
             qty = Decimal(m.group(2))
             price = Decimal(m.group(3))
@@ -173,4 +179,3 @@ async def extract_invoice_from_document(
     extracted = _parse_heuristic_invoice(document_text)
     confidence = 0.92 if extracted.line_items else 0.75
     return extracted, confidence
-

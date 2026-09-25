@@ -1,6 +1,6 @@
 # AP Invoice Engine — Evaluation Report
 
-**Generated:** 2026-09-23T21:06:34.333456  
+**Generated:** 2026-09-25T23:47:57.183809  
 **Evaluation Dataset Size:** 10 documents  
 **Ground Truth Directory:** `data/eval/ground_truth/`  
 **Evaluation Mode:** Multimodal Extraction & Deterministic Python Validation

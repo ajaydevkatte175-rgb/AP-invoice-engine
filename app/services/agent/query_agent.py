@@ -109,7 +109,9 @@ def heuristic_explain_rows(question: str, sql: str, rows: list[dict[str, Any]]) 
                 lines.append(f"- **{v}**: {amt:,.2f} {c} ({invs} invoice(s))")
             else:
                 lines.append(f"- **{v}**: {amt} {c} ({invs} invoice(s))")
-        return f"Total spend breakdown across {count} vendor/currency group(s):\n" + "\n".join(lines)
+        return f"Total spend breakdown across {count} vendor/currency group(s):\n" + "\n".join(
+            lines
+        )
 
     # Invoices list
     if "vendor_name" in rows[0] and "total_amount" in rows[0]:
@@ -126,10 +128,15 @@ def heuristic_explain_rows(question: str, sql: str, rows: list[dict[str, Any]]) 
 
     # Customer issued amounts
     if "customer_name" in rows[0] and "total_amount" in rows[0]:
-        lines = [f"- **{r.get('customer_name')}**: {r.get('total_amount')} ({r.get('invoice_count', 0)} invoices)" for r in rows[:5]]
+        lines = [
+            f"- **{r.get('customer_name')}**: {r.get('total_amount')} ({r.get('invoice_count', 0)} invoices)"
+            for r in rows[:5]
+        ]
         return f"Issued invoices summary across {count} customer(s):\n" + "\n".join(lines)
 
-    return f"Returned {count} record(s) answering '{question}': " + ", ".join(f"{k}={v}" for k, v in rows[0].items())
+    return f"Returned {count} record(s) answering '{question}': " + ", ".join(
+        f"{k}={v}" for k, v in rows[0].items()
+    )
 
 
 class QueryAgent:
@@ -235,7 +242,9 @@ class QueryAgent:
         Returns:
             dict containing session_id, question, generated_sql, query_result, answer, row_count
         """
-        logger.info("Processing user financial question", question=question, tenant_id=str(tenant_id))
+        logger.info(
+            "Processing user financial question", question=question, tenant_id=str(tenant_id)
+        )
 
         # 1. Model Call 1: Generate SQL
         raw_sql = await self._generate_sql(question, tenant_id=tenant_id, session=db_session)
@@ -330,4 +339,3 @@ class QueryAgent:
             "answer": answer,
             "row_count": len(rows),
         }
-
