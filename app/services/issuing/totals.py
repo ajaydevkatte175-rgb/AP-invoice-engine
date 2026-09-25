@@ -8,7 +8,7 @@ NON-NEGOTIABLE RULES:
 """
 
 from dataclasses import dataclass
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 
 
@@ -151,3 +151,4 @@ def compute_totals(
         total_amount=total_amount,
         line_items=computed_items,
     )
+

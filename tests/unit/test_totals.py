@@ -7,6 +7,7 @@ NON-NEGOTIABLE RULES:
 """
 
 from decimal import Decimal
+import pytest
 
 from app.services.issuing.totals import (
     compute_totals,
@@ -42,16 +43,8 @@ class TestComputeTotals:
 
     def test_basic_line_items_without_tax(self):
         items = [
-            {
-                "description": "Item 1",
-                "quantity": Decimal("2.0000"),
-                "unit_price": Decimal("50.00"),
-            },
-            {
-                "description": "Item 2",
-                "quantity": Decimal("3.0000"),
-                "unit_price": Decimal("25.00"),
-            },
+            {"description": "Item 1", "quantity": Decimal("2.0000"), "unit_price": Decimal("50.00")},
+            {"description": "Item 2", "quantity": Decimal("3.0000"), "unit_price": Decimal("25.00")},
         ]
         res = compute_totals(items)
 
@@ -79,11 +72,7 @@ class TestComputeTotals:
     def test_half_cent_commercial_rounding(self):
         """Test commercial half-up rounding on fractional quantities (1.5 * 1.05 = 1.575 -> 1.58)."""
         items = [
-            {
-                "description": "Fractional qty item",
-                "quantity": Decimal("1.5000"),
-                "unit_price": Decimal("1.05"),
-            },
+            {"description": "Fractional qty item", "quantity": Decimal("1.5000"), "unit_price": Decimal("1.05")},
         ]
         res = compute_totals(items)
         assert res.line_items[0].total_amount == Decimal("1.58")
@@ -102,18 +91,8 @@ class TestComputeTotals:
 
     def test_per_line_tax_rates(self):
         items = [
-            {
-                "description": "Taxable item",
-                "quantity": 1,
-                "unit_price": 100,
-                "tax_rate": Decimal("0.2000"),
-            },
-            {
-                "description": "Exempt item",
-                "quantity": 1,
-                "unit_price": 50,
-                "tax_rate": Decimal("0.0000"),
-            },
+            {"description": "Taxable item", "quantity": 1, "unit_price": 100, "tax_rate": Decimal("0.2000")},
+            {"description": "Exempt item", "quantity": 1, "unit_price": 50, "tax_rate": Decimal("0.0000")},
         ]
         res = compute_totals(items)
         assert res.subtotal == Decimal("150.00")

@@ -11,12 +11,11 @@ Covers:
 - Authentication via X-API-Key
 """
 
-import uuid
 from datetime import date, timedelta
 from decimal import Decimal
-
-import pytest
+import uuid
 from httpx import ASGITransport, AsyncClient
+import pytest
 from sqlalchemy import text
 
 from app.core.config import settings
@@ -44,9 +43,9 @@ async def seeded_insights_tenant():
                 due_date=today - timedelta(days=10 * (4 - i)),
                 vendor_name="Alpha Corp",
                 currency="USD",
-                subtotal=price * Decimal(2),
+                subtotal=price * Decimal("2"),
                 tax_amount=Decimal("0.00"),
-                total_amount=price * Decimal(2),
+                total_amount=price * Decimal("2"),
                 status="completed",
                 extraction_confidence=Decimal("0.9500"),
             )
@@ -60,7 +59,7 @@ async def seeded_insights_tenant():
                 description="Standard Widget",
                 quantity=Decimal("2.0000"),
                 unit_price=price,
-                total_amount=price * Decimal(2),
+                total_amount=price * Decimal("2"),
             )
             session.add(li)
 
@@ -245,9 +244,8 @@ async def test_insights_vendor_quality(seeded_insights_tenant):
         assert res.status_code == 200
         data = res.json()
         assert "items" in data
-        beta_quality = next(
-            (i for i in data["items"] if i["vendor_name"] == "Beta Logistics"), None
-        )
+        beta_quality = next((i for i in data["items"] if i["vendor_name"] == "Beta Logistics"), None)
         assert beta_quality is not None
         assert beta_quality["review_count"] >= 1
         assert float(beta_quality["error_rate_percent"]) == 100.0
+

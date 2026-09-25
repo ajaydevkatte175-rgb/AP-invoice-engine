@@ -6,10 +6,9 @@ Use a counter row with SELECT ... FOR UPDATE. Never COUNT(*) + 1.
 """
 
 import uuid
-
-import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+import structlog
 
 from app.models.outbound import InvoiceCounter, TenantProfile
 
@@ -78,3 +77,4 @@ async def next_invoice_number(
     # Format standard 5-digit zero-padded number (e.g. INV-00001)
     invoice_number = f"{prefix}{next_val:05d}"
     return invoice_number
+

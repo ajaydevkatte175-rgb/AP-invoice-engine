@@ -14,7 +14,6 @@ import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any
-
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,11 +45,7 @@ def heuristic_draft_from_text(text: str) -> dict[str, Any]:
     """Deterministic natural language parser for offline testing without API key (Rule 13)."""
     # 1. Extract customer name
     customer_name = "Acme Corp"
-    cust_match = re.search(
-        r"(?:bill|invoice|to|for)\s+([A-Za-z0-9\s&,.-]+?)(?:\s+(?:for|with|due|at|\d|-|\$))",
-        text,
-        re.IGNORECASE,
-    )
+    cust_match = re.search(r"(?:bill|invoice|to|for)\s+([A-Za-z0-9\s&,.-]+?)(?:\s+(?:for|with|due|at|\d|-|\$))", text, re.IGNORECASE)
     if cust_match:
         customer_name = cust_match.group(1).strip()
     elif "Acme" in text:
@@ -85,29 +80,23 @@ def heuristic_draft_from_text(text: str) -> dict[str, Any]:
         qty_str = match.group(1) or "1"
         desc = match.group(2).strip()
         price_str = match.group(3).replace(",", "")
-        line_items.append(
-            {
-                "line_number": idx,
-                "description": desc.capitalize(),
-                "quantity": Decimal(qty_str),
-                "unit_price": Decimal(price_str),
-            }
-        )
+        line_items.append({
+            "line_number": idx,
+            "description": desc.capitalize(),
+            "quantity": Decimal(qty_str),
+            "unit_price": Decimal(price_str),
+        })
 
     if not found_any:
         # Fallback default item
         price_match = re.search(r"[\$€£]?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)", text)
-        unit_price = (
-            Decimal(price_match.group(1).replace(",", "")) if price_match else Decimal("100.00")
-        )
-        line_items.append(
-            {
-                "line_number": 1,
-                "description": "Professional Services",
-                "quantity": Decimal("1.0000"),
-                "unit_price": unit_price,
-            }
-        )
+        unit_price = Decimal(price_match.group(1).replace(",", "")) if price_match else Decimal("100.00")
+        line_items.append({
+            "line_number": 1,
+            "description": "Professional Services",
+            "quantity": Decimal("1.0000"),
+            "unit_price": unit_price,
+        })
 
     return {
         "customer_name": customer_name,
@@ -195,3 +184,4 @@ class DraftInvoiceService:
             "total_amount": computed.total_amount,
             "line_items": [item.to_dict() for item in computed.line_items],
         }
+

@@ -7,7 +7,6 @@ Use a counter row with SELECT ... FOR UPDATE. Never COUNT(*) + 1.
 
 import asyncio
 import uuid
-
 import pytest
 from sqlalchemy import text
 
@@ -78,3 +77,4 @@ async def test_concurrent_invoice_numbering_gapless():
     # Numbers must be strictly gapless from INV-00001 to INV-00010
     expected = [f"INV-{i:05d}" for i in range(1, concurrency_count + 1)]
     assert sorted(results) == expected
+
